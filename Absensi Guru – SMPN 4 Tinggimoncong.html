@@ -1,0 +1,998 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Absensi Guru – SMPN 4 Tinggimoncong</title>
+
+<!-- ============ LIBRARY EKSTERNAL (CDN) ============ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+/* ============ TEMA WARNA (ubah di sini) ============ */
+:root{
+  --biru:#1E3A8A; --biru-muda:#3B82F6; --hijau:#10B981; --hijau-tua:#047857;
+  --merah:#DC2626; --kuning:#F59E0B; --abu:#64748B; --bg:#F1F5F9; --kartu:#FFFFFF;
+  --teks:#0F172A; --garis:#E2E8F0; --radius:12px;
+  --shadow:0 4px 14px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Poppins','Inter',system-ui,sans-serif;background:var(--bg);color:var(--teks);font-size:14px;display:flex;flex-direction:column;min-height:100vh}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
+a{color:var(--biru-muda)}
+
+/* ---------- Header ---------- */
+.header{background:linear-gradient(120deg,var(--biru) 0%,#2563EB 55%,var(--hijau) 130%);color:#fff;box-shadow:var(--shadow)}
+.header-top{display:flex;align-items:center;gap:14px;padding:12px 20px;max-width:1280px;margin:0 auto;flex-wrap:wrap}
+.logo{width:56px;height:56px;border-radius:50%;background:#fff;padding:4px;object-fit:contain;flex-shrink:0}
+.brand h1{font-size:19px;font-weight:700;letter-spacing:.5px;line-height:1.2}
+.brand p{font-size:12px;opacity:.9}
+.spacer{flex:1}
+.userchip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.15);padding:6px 8px 6px 14px;border-radius:30px;font-size:13px}
+.userchip small{display:block;opacity:.85;font-size:11px}
+.nav{background:rgba(0,0,0,.18)}
+.nav-in{max-width:1280px;margin:0 auto;display:flex;gap:4px;padding:0 14px;overflow-x:auto}
+.nav button{background:none;border:0;color:#fff;padding:11px 14px;cursor:pointer;opacity:.82;font-weight:500;white-space:nowrap;border-bottom:3px solid transparent}
+.nav button:hover{opacity:1}
+.nav button.on{opacity:1;border-bottom-color:var(--hijau);background:rgba(255,255,255,.08)}
+
+/* ---------- Layout ---------- */
+main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:20px 16px 30px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--kartu);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.card h2{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--biru)}
+.card h2 i{color:var(--hijau)}
+.page-title{font-size:20px;font-weight:700;color:var(--biru);margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.muted{color:var(--abu);font-size:12.5px}
+
+/* ---------- Form & tombol ---------- */
+label{display:block;font-weight:500;font-size:12.5px;margin:10px 0 4px;color:#334155}
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],input[type=month],select,textarea{width:100%;padding:9px 12px;border:1.5px solid var(--garis);border-radius:9px;background:#fff;outline:none;transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--biru-muda);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 16px;border-radius:9px;border:1.5px solid var(--garis);background:#fff;cursor:pointer;font-weight:500;transition:.15s;color:var(--teks)}
+.btn:hover{background:#F8FAFC}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--biru);border-color:var(--biru);color:#fff}
+.btn.primary:hover{background:#1e40af}
+.btn.green{background:var(--hijau);border-color:var(--hijau);color:#fff}
+.btn.green:hover{background:var(--hijau-tua)}
+.btn.red{background:var(--merah);border-color:var(--merah);color:#fff}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.big{padding:16px 20px;font-size:16px;font-weight:600;border-radius:12px;width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.end{justify-content:flex-end}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0 14px}
+
+/* ---------- Tabel ---------- */
+.tw{overflow-x:auto;border-radius:10px;border:1px solid var(--garis)}
+table{width:100%;border-collapse:collapse;min-width:640px;background:#fff}
+th{background:#EFF6FF;color:var(--biru);text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;white-space:nowrap}
+td{padding:9px 12px;border-top:1px solid var(--garis);font-size:13px;vertical-align:middle}
+tr:hover td{background:#FAFCFF}
+td.c,th.c{text-align:center}
+.avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--biru-muda);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
+.who{display:flex;align-items:center;gap:10px}
+
+/* ---------- Badge ---------- */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.b-Hadir{background:#D1FAE5;color:#065F46}.b-Terlambat{background:#FEF3C7;color:#92400E}
+.b-Izin{background:#DBEAFE;color:#1E40AF}.b-Sakit{background:#FCE7F3;color:#9D174D}
+.b-Cuti{background:#EDE9FE;color:#5B21B6}.b-Alpa{background:#FEE2E2;color:#991B1B}
+.b-Belum{background:#F1F5F9;color:#475569}.b-out{background:#FEE2E2;color:#991B1B}.b-in{background:#D1FAE5;color:#065F46}
+
+/* ---------- Statistik ---------- */
+.stat{display:flex;align-items:center;gap:14px}
+.stat .ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0}
+.stat b{font-size:24px;display:block;line-height:1.1}
+.stat span{font-size:12px;color:var(--abu)}
+
+/* ---------- Absen ---------- */
+.clock{text-align:center;padding:6px 0 14px}
+.clock .t{font-size:42px;font-weight:700;color:var(--biru);letter-spacing:2px;line-height:1}
+.clock .d{color:var(--abu);margin-top:6px}
+#map,#setmap{height:300px;border-radius:10px;border:1px solid var(--garis);z-index:0}
+.geo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.geo div{background:#F8FAFC;border-radius:8px;padding:8px 10px;font-size:12px}
+.geo b{display:block;font-size:13px;word-break:break-all}
+.alert{padding:10px 14px;border-radius:9px;font-size:13px;margin-top:10px;display:flex;gap:10px;align-items:flex-start}
+.alert.ok{background:#D1FAE5;color:#065F46}.alert.warn{background:#FEF3C7;color:#92400E}.alert.bad{background:#FEE2E2;color:#991B1B}.alert.info{background:#DBEAFE;color:#1E40AF}
+
+/* ---------- Login ---------- */
+.login-wrap{max-width:420px;margin:30px auto}
+.tabs{display:flex;background:#E2E8F0;border-radius:10px;padding:4px;margin-bottom:6px}
+.tabs button{flex:1;border:0;background:none;padding:9px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--abu)}
+.tabs button.on{background:#fff;color:var(--biru);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* ---------- Modal & toast ---------- */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:1000}
+.modal{background:#fff;border-radius:14px;padding:20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto}
+.modal h3{color:var(--biru);margin-bottom:6px}
+.modal video{width:100%;border-radius:10px;background:#000;margin:10px 0;transform:scaleX(-1)}
+#toasts{position:fixed;top:14px;right:14px;z-index:2000;display:flex;flex-direction:column;gap:8px;max-width:calc(100vw - 28px)}
+.toast{background:#fff;border-left:5px solid var(--biru);padding:12px 16px;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.18);display:flex;gap:10px;align-items:flex-start;animation:in .25s ease;min-width:240px}
+.toast.success{border-color:var(--hijau)}.toast.error{border-color:var(--merah)}.toast.warn{border-color:var(--kuning)}
+.toast.success i{color:var(--hijau)}.toast.error i{color:var(--merah)}.toast.warn i{color:var(--kuning)}
+@keyframes in{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+
+/* ---------- Footer ---------- */
+footer{background:#0F172A;color:#CBD5E1;text-align:center;padding:16px;font-size:12.5px;line-height:1.7}
+footer b{color:#fff}
+.chartbox{position:relative;height:340px}
+.thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:#EFF6FF;color:var(--biru);padding:4px 10px;border-radius:20px;font-size:12px;display:flex;align-items:center;gap:6px}
+.chip button{border:0;background:none;cursor:pointer;color:var(--merah)}
+@media(max-width:600px){
+  .brand h1{font-size:15px}.logo{width:44px;height:44px}.clock .t{font-size:34px}
+  .geo{grid-template-columns:1fr}.card{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="header">
+  <div class="header-top">
+    <img id="hLogo" class="logo" alt="Logo sekolah">
+    <div class="brand">
+      <h1 id="hName">SMPN 4 TINGGIMONCONG</h1>
+      <p id="hSub">Aplikasi Absensi Kehadiran Guru</p>
+    </div>
+    <div class="spacer"></div>
+    <div id="hUser"></div>
+  </div>
+  <nav class="nav" id="hNav" style="display:none"><div class="nav-in" id="hNavIn"></div></nav>
+</header>
+
+<main id="app"></main>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div>Kepala Sekolah: <b id="fName">Syafruddin, S.Pd., M.Si.</b></div>
+  <div>NIP. <b id="fNip">19690727 199503 1 003</b></div>
+  <div id="fCopy"></div>
+</footer>
+
+<div id="toasts"></div>
+
+<script>
+/* =====================================================================
+   APLIKASI ABSENSI GURU – SMPN 4 TINGGIMONCONG
+   Semua data disimpan di localStorage browser (mode demo).
+   Bagian "KONFIGURASI AWAL" di bawah dapat diubah langsung bila perlu,
+   tetapi cara paling mudah adalah lewat menu Admin → Pengaturan.
+   ===================================================================== */
+
+/* ---------- KONFIGURASI AWAL (default) ---------- */
+const DEFAULT_SETTINGS = {
+  schoolName: 'SMPN 4 Tinggimoncong',
+  instansi:   'Dinas Pendidikan Kabupaten Gowa',
+  address:    'Kec. Tinggimoncong, Kabupaten Gowa, Sulawesi Selatan',
+  logo:       '',                 // kosong = pakai logo bawaan; atau unggah di Pengaturan
+  lat: -5.2667, lng: 119.8550,    // ⚠ GANTI dengan koordinat asli sekolah (Pengaturan → Lokasi)
+  radius: 100,                    // radius maksimal (meter)
+  lateTime: '07:15',              // lewat jam ini = Terlambat
+  outTime:  '14:00',              // jam pulang standar
+  workDays: [1,2,3,4,5],          // 0=Minggu ... 6=Sabtu
+  holidays: [],                   // [{date:'2026-12-25', name:'Natal'}]
+  headName: 'Syafruddin, S.Pd., M.Si.',
+  headNip:  '19690727 199503 1 003',
+  city: 'Tinggimoncong',
+  reverseGeo: true,               // cari alamat otomatis (butuh internet)
+  simulate: false,                // mode uji lokasi (tanpa GPS asli)
+  adminUser: 'admin',
+  adminPass: 'admin123'
+};
+
+/* ---------- LOGO BAWAAN (SVG) ---------- */
+const DEFAULT_LOGO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+ '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E3A8A"/><stop offset="1" stop-color="#10B981"/></linearGradient></defs>'+
+ '<path d="M50 4 90 18v30c0 24-17 42-40 48C27 90 10 72 10 48V18z" fill="url(#g)" stroke="#fff" stroke-width="3"/>'+
+ '<path d="M26 40c8-3 17-3 24 3 7-6 16-6 24-3v28c-8-3-17-3-24 3-7-6-16-6-24-3z" fill="#fff"/><path d="M50 43v28" stroke="#1E3A8A" stroke-width="3"/>'+
+ '<text x="50" y="30" font-size="11" font-weight="700" text-anchor="middle" fill="#fff" font-family="Arial">SMPN 4</text></svg>');
+
+const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const HARI  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const STATUS_LIST = ['Hadir','Terlambat','Izin','Sakit','Cuti'];
+
+/* ---------- Utilitas ---------- */
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pad = n => String(n).padStart(2,'0');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayStr = () => ymd(new Date());
+const nowHMS = () => { const d=new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+const toSec = t => { const p=(t||'0:0:0').split(':').map(Number); return p[0]*3600+(p[1]||0)*60+(p[2]||0); };
+const tglIndo = (d=new Date()) => `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`;
+const tglIndoStr = s => { const [y,m,d]=s.split('-').map(Number); return `${d} ${BULAN[m-1]} ${y}`; };
+const fmtNip = n => { n=String(n||'').replace(/\D/g,''); return n.length===18 ? `${n.slice(0,8)} ${n.slice(8,14)} ${n.slice(14,15)} ${n.slice(15)}` : n; };
+const initials = n => String(n||'?').replace(/[^A-Za-z\s]/g,'').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase() || '?';
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v===null?d:JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ toast('Penyimpanan browser penuh. Hapus foto/selfie lama.','error'); return false; } }
+};
+
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371000, rad=x=>x*Math.PI/180;
+  const a=Math.sin(rad(lat2-lat1)/2)**2+Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(rad(lon2-lon1)/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
+/* ---------- Toast ---------- */
+function toast(msg,type='info'){
+  const ic={success:'fa-circle-check',error:'fa-circle-xmark',warn:'fa-triangle-exclamation',info:'fa-circle-info'}[type]||'fa-circle-info';
+  const el=document.createElement('div'); el.className='toast '+type;
+  el.innerHTML=`<i class="fa-solid ${ic}"></i><div>${esc(msg)}</div>`;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.3s'; setTimeout(()=>el.remove(),300); }, 4200);
+}
+
+/* ---------- Modal ---------- */
+function openModal(html){
+  closeModal();
+  const o=document.createElement('div'); o.className='overlay'; o.id='modalOv';
+  o.innerHTML=`<div class="modal">${html}</div>`;
+  o.addEventListener('mousedown',e=>{ if(e.target===o && !o.dataset.lock) closeModal(); });
+  document.body.appendChild(o); return o;
+}
+function closeModal(){ const o=$('#modalOv'); if(o) o.remove(); }
+function confirmBox(msg){ return window.confirm(msg); }
+
+/* ---------- Data ---------- */
+let settings = Object.assign({}, DEFAULT_SETTINGS, LS.get('tp_settings', {}));
+let teachers = LS.get('tp_teachers', null);
+let att      = LS.get('tp_att', null);
+let logs     = LS.get('tp_logs', []);
+
+const saveSettings = () => LS.set('tp_settings', settings);
+const saveTeachers = () => LS.set('tp_teachers', teachers);
+const saveAtt      = () => LS.set('tp_att', att);
+function addLog(actor, action, detail=''){
+  logs.unshift({t:new Date().toISOString(), actor, action, detail});
+  if(logs.length>500) logs.length=500;
+  LS.set('tp_logs', logs);
+}
+
+/* Data contoh: 10 guru (NIP fiktif) */
+function seedTeachers(){
+  return [
+    ['198005122005011003','Andi Baharuddin, S.Pd.','Matematika'],
+    ['198207202006042008','Hj. Nurhayati, S.Pd.','Bahasa Indonesia'],
+    ['197911152005011005','Muh. Arsyad, S.Pd., M.Pd.','IPA'],
+    ['198503302009022004','Sitti Rahmawati, S.Pd.','Bahasa Inggris'],
+    ['198110102007011012','Syarifuddin, S.Pd., M.Si.','Informatika'],
+    ['198812052011012006','Dewi Kartika, S.Pd.','IPS'],
+    ['197709172003121004','Abd. Rahman, S.Ag.','Pendidikan Agama Islam'],
+    ['199001252014022003','Nur Fadillah, S.Pd.','PJOK'],
+    ['198604182010011011','Hasanuddin, S.Pd.','PPKn'],
+    ['199205302019032007','Rina Marlina, S.Sn.','Seni Budaya']
+  ].map(([nip,name,mapel])=>({id:uid(),nip,name,mapel,photo:'',password:'123456'}));
+}
+
+/* Data contoh absensi: hari kerja bulan berjalan sampai kemarin */
+function seedAttendance(){
+  const out=[], now=new Date(), y=now.getFullYear(), m=now.getMonth();
+  for(let d=1; d<now.getDate(); d++){
+    const dt=new Date(y,m,d), ds=ymd(dt);
+    if(!isWorkday(ds)) continue;
+    teachers.forEach(t=>{
+      const r=Math.random();
+      if(r>0.97) return; // alpa
+      let status='Hadir'; if(r<0.10) status='Terlambat'; else if(r<0.14) status='Izin'; else if(r<0.18) status='Sakit'; else if(r<0.20) status='Cuti';
+      const rec={id:uid(),nip:t.nip,date:ds,status,note:'(data contoh)',demo:true};
+      if(status==='Hadir'||status==='Terlambat'){
+        const mm = status==='Hadir' ? 25+Math.floor(Math.random()*45) : 76+Math.floor(Math.random()*40);
+        const tm=`${pad(6+Math.floor(mm/60))}:${pad(mm%60)}:${pad(Math.floor(Math.random()*60))}`;
+        rec.in={time:tm,lat:settings.lat+(Math.random()-.5)*0.0004,lng:settings.lng+(Math.random()-.5)*0.0004,dist:Math.round(Math.random()*60),inside:true,address:'',selfie:''};
+        rec.out={time:`${pad(14+Math.floor(Math.random()*2))}:${pad(Math.floor(Math.random()*60))}:00`,lat:rec.in.lat,lng:rec.in.lng,dist:rec.in.dist,inside:true,address:'',selfie:''};
+      }
+      out.push(rec);
+    });
+  }
+  return out;
+}
+if(!teachers){ teachers=seedTeachers(); saveTeachers(); }
+if(!att){ att=seedAttendance(); saveAtt(); }
+
+/* ---------- Kalender kerja ---------- */
+function isWorkday(ds){
+  const [y,m,d]=ds.split('-').map(Number); const dow=new Date(y,m-1,d).getDay();
+  return settings.workDays.includes(dow) && !settings.holidays.some(h=>h.date===ds);
+}
+/* Hari kerja efektif = hari kerja pada bulan itu yang sudah lewat
+   (hari ini dihitung setelah jam pulang). Dipakai untuk Alpa & persentase. */
+function effectiveWorkdays(y,m){
+  const now=new Date(), today=todayStr(), n=new Date(y,m+1,0).getDate(); let c=0;
+  for(let d=1; d<=n; d++){
+    const ds=`${y}-${pad(m+1)}-${pad(d)}`;
+    if(ds>today) break;
+    if(ds===today && toSec(nowHMS()) < toSec(settings.outTime)) break;
+    if(isWorkday(ds)) c++;
+  }
+  return c;
+}
+const getRec = (nip,ds) => att.find(a=>a.nip===nip && a.date===ds);
+
+function recapData(y,m){
+  const days=effectiveWorkdays(y,m), pre=`${y}-${pad(m+1)}`;
+  return {days, rows: teachers.map((t,i)=>{
+    const rs=att.filter(a=>a.nip===t.nip && a.date.startsWith(pre));
+    const c=s=>rs.filter(r=>r.status===s).length;
+    const h=c('Hadir'), te=c('Terlambat'), iz=c('Izin'), sk=c('Sakit'), cu=c('Cuti');
+    const alpa=Math.max(0, days-(h+te+iz+sk+cu));
+    const pct= days ? Math.min(100,(h+te)/days*100) : 0;
+    return {no:i+1,name:t.name,nip:t.nip,h,te,iz,sk,cu,alpa,pct};
+  })};
+}
+
+/* ---------- Aplikasi / state ---------- */
+const now0=new Date();
+const S = { user:LS.get('tp_session',null), view:'', month:now0.getMonth(), year:now0.getFullYear(), loginRole:'guru' };
+let timers=[], mapObj=null, chartObjs=[], watchId=null;
+let geo={ok:false,lat:0,lng:0,acc:0,err:'',addr:''};
+
+function clearRuntime(){
+  timers.forEach(clearInterval); timers=[];
+  if(mapObj){ mapObj.remove(); mapObj=null; }
+  chartObjs.forEach(c=>c.destroy()); chartObjs=[];
+  if(watchId!==null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+}
+
+function applyBranding(){
+  $('#hLogo').src = settings.logo || DEFAULT_LOGO;
+  $('#hName').textContent = settings.schoolName.toUpperCase();
+  $('#hSub').textContent = settings.instansi + ' • Aplikasi Absensi Kehadiran Guru';
+  $('#fName').textContent = settings.headName;
+  $('#fNip').textContent  = settings.headNip;
+  $('#fCopy').textContent = `© ${new Date().getFullYear()} ${settings.schoolName} – Sistem Absensi Kehadiran Guru`;
+  document.title = `Absensi Guru – ${settings.schoolName}`;
+}
+
+function renderHeader(){
+  const u=S.user;
+  if(!u){ $('#hUser').innerHTML=''; $('#hNav').style.display='none'; return; }
+  const nm = u.role==='admin' ? 'Administrator' : (teachers.find(t=>t.nip===u.nip)?.name||'Guru');
+  $('#hUser').innerHTML=`<div class="userchip"><div><b>${esc(nm)}</b><small>${u.role==='admin'?'Admin':'NIP '+esc(fmtNip(u.nip))}</small></div>
+    <button class="btn sm" onclick="App.logout()"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button></div>`;
+  if(u.role==='admin'){
+    const items=[['adminHome','fa-gauge','Dashboard'],['adminTeachers','fa-users','Data Guru'],['adminRecap','fa-chart-column','Rekap Bulanan'],['adminLogs','fa-clock-rotate-left','Log Aktivitas'],['adminSettings','fa-gear','Pengaturan']];
+    $('#hNavIn').innerHTML=items.map(([v,i,l])=>`<button class="${S.view===v?'on':''}" onclick="App.go('${v}')"><i class="fa-solid ${i}"></i> ${l}</button>`).join('');
+    $('#hNav').style.display='block';
+  } else $('#hNav').style.display='none';
+}
+
+const App = {
+  go(v){ S.view=v; render(); window.scrollTo({top:0}); },
+  logout(){
+    if(S.user) addLog(S.user.role==='admin'?'Admin':S.user.nip,'Logout','');
+    S.user=null; sessionStorage.removeItem('tp_session'); localStorage.removeItem('tp_session'); S.view='login'; render();
+  }
+};
+window.App=App;
+
+function render(){
+  clearRuntime(); closeModal(); applyBranding();
+  if(!S.user) S.view='login';
+  else if(!S.view || S.view==='login') S.view = S.user.role==='admin' ? 'adminHome' : 'guruDash';
+  renderHeader();
+  const V={login:vLogin,guruDash:vGuru,adminHome:vAdminHome,adminTeachers:vTeachers,adminRecap:vRecap,adminLogs:vLogs,adminSettings:vSettings};
+  (V[S.view]||vLogin)();
+}
+
+/* =====================================================================
+   1. LOGIN
+   ===================================================================== */
+function vLogin(){
+  const g=S.loginRole==='guru';
+  $('#app').innerHTML=`
+  <div class="login-wrap"><div class="card">
+    <h2 style="font-size:19px;justify-content:center"><i class="fa-solid fa-user-lock"></i> Masuk ke Aplikasi</h2>
+    <div class="tabs">
+      <button class="${g?'on':''}" onclick="S.loginRole='guru';vLogin()"><i class="fa-solid fa-chalkboard-user"></i> Guru</button>
+      <button class="${!g?'on':''}" onclick="S.loginRole='admin';vLogin()"><i class="fa-solid fa-user-shield"></i> Admin</button>
+    </div>
+    <form id="fLogin" autocomplete="off">
+      <label>${g?'NIP':'Username Admin'}</label>
+      <input type="text" id="lUser" ${g?'inputmode="numeric" placeholder="Masukkan NIP (angka saja)"':'placeholder="Username"'} required>
+      <label>Kata Sandi</label>
+      <input type="password" id="lPass" placeholder="Kata sandi" required>
+      <button class="btn primary big" style="margin-top:16px"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+    </form>
+    <div class="alert info"><i class="fa-solid fa-circle-info"></i><div>
+      <b>Akun demo</b><br>
+      Admin: <code>${esc(settings.adminUser)}</code> / <code>admin123</code><br>
+      Guru: NIP <code>${esc(teachers[0]?.nip||'')}</code> / <code>123456</code><br>
+      <span class="muted">(Sandi guru default 123456 — ubah di menu Data Guru)</span></div></div>
+  </div></div>`;
+  $('#fLogin').addEventListener('submit',e=>{
+    e.preventDefault();
+    const u=$('#lUser').value.trim(), p=$('#lPass').value;
+    if(S.loginRole==='admin'){
+      if(u===settings.adminUser && p===settings.adminPass){ S.user={role:'admin'}; }
+      else return toast('Username atau kata sandi admin salah','error');
+    } else {
+      const nip=u.replace(/\D/g,''); const t=teachers.find(x=>x.nip===nip);
+      if(!t || t.password!==p) return toast('NIP atau kata sandi salah','error');
+      S.user={role:'guru',nip};
+    }
+    LS.set('tp_session',S.user); addLog(S.user.role==='admin'?'Admin':S.user.nip,'Login','');
+    S.view=''; toast('Selamat datang!','success'); render();
+  });
+}
+
+/* =====================================================================
+   2. DASHBOARD GURU – absen + peta + riwayat
+   ===================================================================== */
+function vGuru(){
+  const t=teachers.find(x=>x.nip===S.user.nip);
+  if(!t){ toast('Data guru tidak ditemukan','error'); return App.logout(); }
+  const ds=todayStr(); const rec=getRec(t.nip,ds);
+  const cm=S.month, cy=S.year;
+
+  $('#app').innerHTML=`
+  <div class="grid g2">
+    <div class="card">
+      <h2><i class="fa-solid fa-fingerprint"></i> Absensi Hari Ini</h2>
+      <div class="clock"><div class="t" id="clk">--:--:--</div><div class="d" id="dte"></div></div>
+      <div class="cols">
+        <div><label>Nama Guru</label><input type="text" value="${esc(t.name)}" readonly></div>
+        <div><label>NIP</label><input type="text" value="${esc(fmtNip(t.nip))}" readonly></div>
+      </div>
+      <div class="cols">
+        <div><label>Tanggal</label><input type="text" id="fTgl" readonly></div>
+        <div><label>Status Hari Ini</label><input type="text" id="fStat" readonly></div>
+      </div>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400;margin-top:12px"><input type="checkbox" id="chkSelfie" style="width:auto"> Ambil foto selfie saat absen (opsional)</label>
+      <div class="cols" style="margin-top:12px">
+        <button class="btn green big" id="btnIn" onclick="Guru.check('in')"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
+        <button class="btn primary big" id="btnOut" onclick="Guru.check('out')"><i class="fa-solid fa-right-from-bracket"></i> Pulang</button>
+      </div>
+      <button class="btn" style="width:100%;margin-top:10px" onclick="Guru.izin()"><i class="fa-solid fa-envelope-open-text"></i> Ajukan Izin / Sakit / Cuti</button>
+      <div id="todayInfo"></div>
+    </div>
+
+    <div class="card">
+      <h2><i class="fa-solid fa-location-dot"></i> Lokasi Anda</h2>
+      <div id="map"></div>
+      <div class="geo">
+        <div>Latitude<b id="gLat">-</b></div><div>Longitude<b id="gLng">-</b></div>
+        <div>Jarak ke sekolah<b id="gDist">-</b></div><div>Akurasi GPS<b id="gAcc">-</b></div>
+      </div>
+      <div id="geoAlert"></div>
+      <div class="muted" style="margin-top:8px" id="gAddr"></div>
+      ${settings.simulate?`<div class="row" style="margin-top:10px"><button class="btn sm" onclick="Guru.sim(true)">📍 Simulasi: di sekolah</button><button class="btn sm" onclick="Guru.sim(false)">📍 Simulasi: di luar sekolah</button></div>`:''}
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Kehadiran Saya</h2>
+    <div class="row" style="margin-bottom:10px">
+      <select id="hMon" style="width:auto">${BULAN.map((b,i)=>`<option value="${i}" ${i===cm?'selected':''}>${b}</option>`).join('')}</select>
+      <input type="number" id="hYr" value="${cy}" style="width:100px">
+    </div>
+    <div class="tw"><table><thead><tr><th>Tanggal</th><th>Hari</th><th>Status</th><th>Masuk</th><th>Pulang</th><th>Lokasi</th><th>Keterangan</th></tr></thead><tbody id="hist"></tbody></table></div>
+  </div>`;
+
+  /* jam & tanggal */
+  const tick=()=>{ $('#clk').textContent=nowHMS(); $('#dte').textContent=`${HARI[new Date().getDay()]}, ${tglIndo()}`; };
+  tick(); timers.push(setInterval(tick,1000));
+  $('#fTgl').value=`${HARI[new Date().getDay()]}, ${tglIndo()}`;
+
+  Guru.refreshToday(); Guru.history();
+  $('#hMon').onchange=()=>{S.month=+$('#hMon').value;Guru.history();};
+  $('#hYr').onchange=()=>{S.year=+$('#hYr').value||cy;Guru.history();};
+  Guru.initMap();
+}
+
+const Guru={
+  marker:null, circle:null,
+  refreshToday(){
+    const t=teachers.find(x=>x.nip===S.user.nip); const rec=getRec(t.nip,todayStr());
+    let st='Belum absen';
+    if(rec) st=rec.status+(rec.in&&!rec.in.inside?' (Di Luar Lokasi)':'');
+    $('#fStat').value=st;
+    const locked = rec && !rec.in;            // izin/sakit/cuti
+    $('#btnIn').disabled  = !!rec;            // tidak bisa absen dua kali
+    $('#btnOut').disabled = !(rec && rec.in && !rec.out);
+    let info='';
+    if(rec?.in) info+=`<div class="alert ok"><i class="fa-solid fa-circle-check"></i><div>Masuk pukul <b>${rec.in.time}</b> – <span class="badge b-${rec.status}">${rec.status}</span>${rec.in.inside?'':' <span class="badge b-out">Di Luar Lokasi</span>'}</div></div>`;
+    if(rec?.out) info+=`<div class="alert ok"><i class="fa-solid fa-circle-check"></i><div>Pulang pukul <b>${rec.out.time}</b>${rec.out.inside?'':' <span class="badge b-out">Di Luar Lokasi</span>'}</div></div>`;
+    if(locked) info+=`<div class="alert info"><i class="fa-solid fa-envelope"></i><div>Hari ini tercatat <b>${rec.status}</b>${rec.note?': '+esc(rec.note):''}</div></div>`;
+    if(!isWorkday(todayStr())) info+=`<div class="alert warn"><i class="fa-solid fa-calendar-xmark"></i><div>Hari ini bukan hari kerja (libur / di luar jadwal).</div></div>`;
+    $('#todayInfo').innerHTML=info;
+  },
+  history(){
+    const pre=`${S.year}-${pad(S.month+1)}`; const nip=S.user.nip;
+    const n=new Date(S.year,S.month+1,0).getDate(); let html='';
+    for(let d=n; d>=1; d--){
+      const ds=`${pre}-${pad(d)}`; if(ds>todayStr()) continue;
+      const r=getRec(nip,ds); const dow=HARI[new Date(S.year,S.month,d).getDay()];
+      if(!r && !isWorkday(ds)) continue;
+      const stat=r?r.status:'Alpa';
+      html+=`<tr><td>${tglIndoStr(ds)}</td><td>${dow}</td><td><span class="badge b-${stat}">${stat}</span></td>
+        <td>${r?.in?.time||'-'}</td><td>${r?.out?.time||'-'}</td>
+        <td>${r?.in?(r.in.inside?'<span class="badge b-in">Di Sekolah</span>':'<span class="badge b-out">Di Luar Lokasi</span>'):'-'}</td>
+        <td>${esc(r?.note||'')}</td></tr>`;
+    }
+    $('#hist').innerHTML=html||'<tr><td colspan="7" class="muted" style="text-align:center;padding:20px">Belum ada data pada bulan ini.</td></tr>';
+  },
+  initMap(){
+    mapObj=L.map('map').setView([settings.lat,settings.lng],17);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(mapObj);
+    L.circle([settings.lat,settings.lng],{radius:settings.radius,color:'#10B981',fillColor:'#10B981',fillOpacity:.15}).addTo(mapObj);
+    L.marker([settings.lat,settings.lng],{title:'Sekolah'}).addTo(mapObj).bindPopup('<b>'+esc(settings.schoolName)+'</b><br>Titik lokasi sekolah');
+    Guru.marker=null;
+    if(settings.simulate){ Guru.sim(true); return; }
+    if(!navigator.geolocation){ geo={ok:false,err:'Browser tidak mendukung GPS.'}; Guru.paint(); return; }
+    $('#geoAlert').innerHTML='<div class="alert info"><i class="fa-solid fa-satellite-dish"></i><div>Meminta izin lokasi… Mohon pilih <b>Izinkan</b>.</div></div>';
+    watchId=navigator.geolocation.watchPosition(p=>{
+      Guru.setPos(p.coords.latitude,p.coords.longitude,p.coords.accuracy);
+    },err=>{
+      const m={1:'Izin lokasi ditolak. Aktifkan izin lokasi di pengaturan browser lalu muat ulang halaman.',2:'Posisi tidak tersedia. Pastikan GPS/Wi-Fi aktif.',3:'Waktu permintaan lokasi habis. Coba lagi.'}[err.code]||'Gagal membaca lokasi.';
+      geo={ok:false,err:m}; Guru.paint();
+    },{enableHighAccuracy:true,timeout:20000,maximumAge:5000});
+  },
+  sim(inside){
+    const lat=inside?settings.lat+0.0002:settings.lat+0.0030, lng=inside?settings.lng+0.0002:settings.lng+0.0030;
+    Guru.setPos(lat,lng,10);
+  },
+  _addrKey:'',
+  setPos(lat,lng,acc){
+    geo.ok=true; geo.lat=lat; geo.lng=lng; geo.acc=acc; geo.err='';
+    geo.dist=haversine(lat,lng,settings.lat,settings.lng);
+    Guru.paint();
+    if(mapObj){
+      if(!Guru.marker){ Guru.marker=L.circleMarker([lat,lng],{radius:9,color:'#fff',weight:3,fillColor:'#1E3A8A',fillOpacity:1}).addTo(mapObj).bindPopup('Posisi Anda'); mapObj.fitBounds(L.latLngBounds([[lat,lng],[settings.lat,settings.lng]]).pad(0.4),{maxZoom:18}); }
+      else Guru.marker.setLatLng([lat,lng]);
+    }
+    const key=lat.toFixed(4)+','+lng.toFixed(4);
+    if(settings.reverseGeo && key!==Guru._addrKey){ Guru._addrKey=key; geo.addr=''; Guru.reverse(lat,lng,key); }
+  },
+  async reverse(lat,lng,key){
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&accept-language=id`);
+      const j=await r.json(); if(key===Guru._addrKey){ geo.addr=j.display_name||''; const el=$('#gAddr'); if(el) el.textContent=geo.addr?'📍 '+geo.addr:''; }
+    }catch(e){ /* alamat opsional */ }
+  },
+  paint(){
+    if(!$('#gLat')) return;
+    if(!geo.ok){ $('#geoAlert').innerHTML=`<div class="alert bad"><i class="fa-solid fa-location-crosshairs"></i><div>${esc(geo.err||'Lokasi belum terdeteksi')}</div></div>`; return; }
+    $('#gLat').textContent=geo.lat.toFixed(6); $('#gLng').textContent=geo.lng.toFixed(6);
+    $('#gDist').textContent=Math.round(geo.dist)+' m (maks '+settings.radius+' m)'; $('#gAcc').textContent='± '+Math.round(geo.acc)+' m';
+    const inside=geo.dist<=settings.radius;
+    $('#geoAlert').innerHTML=inside
+      ?'<div class="alert ok"><i class="fa-solid fa-circle-check"></i><div>Anda berada <b>di dalam area sekolah</b>.</div></div>'
+      :'<div class="alert bad"><i class="fa-solid fa-triangle-exclamation"></i><div><b>Anda berada di luar area sekolah.</b> Absensi tetap bisa dicatat, tetapi ditandai “Di Luar Lokasi”.</div></div>';
+  },
+
+  async check(type){
+    const t=teachers.find(x=>x.nip===S.user.nip), ds=todayStr(); let rec=getRec(t.nip,ds);
+    if(!geo.ok) return toast('Lokasi belum terdeteksi. Izinkan akses lokasi terlebih dahulu.','error');
+    if(type==='in' && rec) return toast('Anda sudah tercatat absen hari ini.','warn');
+    if(type==='out'){
+      if(!rec||!rec.in) return toast('Anda belum absen masuk hari ini.','warn');
+      if(rec.out) return toast('Anda sudah absen pulang hari ini.','warn');
+    }
+    if(!isWorkday(ds) && !confirmBox('Hari ini bukan hari kerja. Tetap lanjutkan absensi?')) return;
+    let selfie='';
+    if($('#chkSelfie').checked) selfie=await takeSelfie();
+    const time=nowHMS(), inside=geo.dist<=settings.radius;
+    const pos={time,lat:+geo.lat.toFixed(6),lng:+geo.lng.toFixed(6),dist:Math.round(geo.dist),inside,address:geo.addr||'',selfie};
+    if(type==='in'){
+      const late=toSec(time)>toSec(settings.lateTime+':00');
+      rec={id:uid(),nip:t.nip,date:ds,status:late?'Terlambat':'Hadir',note:'',in:pos};
+      att.push(rec);
+      if(!saveAtt()){ att.pop(); return; }
+      addLog(t.nip,'Absen Masuk',`${time} • ${rec.status} • ${inside?'di sekolah':'DI LUAR LOKASI ('+pos.dist+' m)'}`);
+      toast(`Absen masuk berhasil pukul ${time.slice(0,5)} – ${rec.status}`,late?'warn':'success');
+    } else {
+      rec.out=pos; saveAtt();
+      addLog(t.nip,'Absen Pulang',`${time} • ${inside?'di sekolah':'DI LUAR LOKASI ('+pos.dist+' m)'}`);
+      toast(`Absen pulang berhasil pukul ${time.slice(0,5)}`,'success');
+    }
+    if(!inside) toast('Anda berada di luar area sekolah – absensi ditandai “Di Luar Lokasi”.','warn');
+    Guru.refreshToday(); Guru.history();
+  },
+
+  izin(){
+    const t=teachers.find(x=>x.nip===S.user.nip); const ds=todayStr();
+    if(getRec(t.nip,ds)) return toast('Anda sudah tercatat absen hari ini.','warn');
+    openModal(`<h3>Ajukan Izin / Sakit / Cuti</h3><p class="muted">Untuk tanggal ${tglIndo()}</p>
+      <label>Jenis</label><select id="iJenis"><option>Izin</option><option>Sakit</option><option>Cuti</option></select>
+      <label>Keterangan</label><textarea id="iNote" rows="3" placeholder="Alasan singkat"></textarea>
+      <div class="row end" style="margin-top:14px"><button class="btn" onclick="closeModal()">Batal</button><button class="btn primary" onclick="Guru.saveIzin()">Simpan</button></div>`);
+  },
+  saveIzin(){
+    const t=teachers.find(x=>x.nip===S.user.nip), ds=todayStr();
+    if(getRec(t.nip,ds)) return toast('Sudah ada catatan hari ini.','warn');
+    const st=$('#iJenis').value, note=$('#iNote').value.trim();
+    if(!note) return toast('Keterangan wajib diisi.','error');
+    att.push({id:uid(),nip:t.nip,date:ds,status:st,note}); saveAtt();
+    addLog(t.nip,'Pengajuan '+st,note); closeModal(); toast(st+' berhasil dicatat.','success');
+    Guru.refreshToday(); Guru.history();
+  }
+};
+window.Guru=Guru;
+
+/* Selfie via kamera web (opsional) → dataURL JPEG kecil */
+function takeSelfie(){
+  return new Promise(res=>{
+    const o=openModal(`<h3>Foto Selfie</h3><p class="muted">Posisikan wajah di depan kamera.</p><video id="cam" autoplay playsinline muted></video>
+      <div class="row end"><button class="btn" id="camSkip">Lewati</button><button class="btn green" id="camSnap"><i class="fa-solid fa-camera"></i> Ambil Foto</button></div>`);
+    o.dataset.lock='1'; let stream=null;
+    const done=v=>{ if(stream) stream.getTracks().forEach(t=>t.stop()); closeModal(); res(v); };
+    if(!navigator.mediaDevices?.getUserMedia){ toast('Kamera tidak tersedia, selfie dilewati.','warn'); return done(''); }
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}}).then(s=>{ stream=s; $('#cam').srcObject=s; })
+      .catch(()=>{ toast('Izin kamera ditolak, selfie dilewati.','warn'); done(''); });
+    $('#camSkip').onclick=()=>done('');
+    $('#camSnap').onclick=()=>{
+      const v=$('#cam'); if(!v.videoWidth) return toast('Kamera belum siap.','warn');
+      const c=document.createElement('canvas'), w=320, h=Math.round(v.videoHeight/v.videoWidth*w); c.width=w;c.height=h;
+      c.getContext('2d').drawImage(v,0,0,w,h); done(c.toDataURL('image/jpeg',.6));
+    };
+  });
+}
+
+/* =====================================================================
+   3. DASHBOARD ADMIN
+   ===================================================================== */
+function vAdminHome(){
+  const ds=todayStr(); const work=isWorkday(ds);
+  const recs=teachers.map(t=>({t,r:getRec(t.nip,ds)}));
+  const cnt=s=>recs.filter(x=>x.r?.status===s).length;
+  const belum=recs.filter(x=>!x.r).length;
+  const stat=(ic,col,n,l)=>`<div class="card stat"><div class="ic" style="background:${col}"><i class="fa-solid ${ic}"></i></div><div><b>${n}</b><span>${l}</span></div></div>`;
+  $('#app').innerHTML=`
+  <div class="page-title"><i class="fa-solid fa-gauge"></i> Dashboard Admin <span class="muted" style="font-weight:400">${HARI[new Date().getDay()]}, ${tglIndo()}</span></div>
+  ${work?'':'<div class="alert warn" style="margin:0 0 14px"><i class="fa-solid fa-calendar-xmark"></i><div>Hari ini bukan hari kerja.</div></div>'}
+  <div class="grid g4">
+    ${stat('fa-users','#1E3A8A',teachers.length,'Total Guru')}
+    ${stat('fa-circle-check','#10B981',cnt('Hadir'),'Hadir')}
+    ${stat('fa-clock','#F59E0B',cnt('Terlambat'),'Terlambat')}
+    ${stat('fa-envelope-open-text','#3B82F6',cnt('Izin')+cnt('Sakit')+cnt('Cuti'),'Izin / Sakit / Cuti')}
+    ${stat('fa-circle-question','#64748B',belum,'Belum Absen')}
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2><i class="fa-solid fa-list-check"></i> Kehadiran Hari Ini</h2>
+    <div class="tw"><table><thead><tr><th>Nama Guru</th><th>NIP</th><th>Status</th><th>Masuk</th><th>Pulang</th><th>Lokasi</th><th>Selfie</th></tr></thead><tbody>
+    ${recs.map(({t,r})=>`<tr>
+      <td><div class="who">${avatar(t)}<div><b>${esc(t.name)}</b><div class="muted">${esc(t.mapel)}</div></div></div></td>
+      <td>${esc(fmtNip(t.nip))}</td>
+      <td><span class="badge b-${r?r.status:'Belum'}">${r?r.status:'Belum absen'}</span></td>
+      <td>${r?.in?.time||'-'}</td><td>${r?.out?.time||'-'}</td>
+      <td>${r?.in?(r.in.inside?'<span class="badge b-in">Di Sekolah</span>':`<span class="badge b-out">Di Luar (${r.in.dist} m)</span>`)+` <a href="https://www.google.com/maps?q=${r.in.lat},${r.in.lng}" target="_blank" rel="noopener" title="Buka di Google Maps"><i class="fa-solid fa-map-location-dot"></i></a>`:'-'}</td>
+      <td>${r?.in?.selfie?`<img class="thumb" src="${r.in.selfie}" onclick="viewImg(this.src)">`:'-'}</td></tr>`).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+function avatar(t){ return t.photo?`<img class="avatar" src="${t.photo}" alt="">`:`<span class="avatar">${esc(initials(t.name))}</span>`; }
+window.viewImg=src=>openModal(`<img src="${src}" style="width:100%;border-radius:10px"><div class="row end" style="margin-top:10px"><button class="btn" onclick="closeModal()">Tutup</button></div>`);
+
+/* =====================================================================
+   4. DATA GURU (CRUD)
+   ===================================================================== */
+function vTeachers(){
+  $('#app').innerHTML=`
+  <div class="page-title"><i class="fa-solid fa-users"></i> Data Guru
+    <div class="spacer"></div><button class="btn primary" onclick="Teach.form()"><i class="fa-solid fa-plus"></i> Tambah Guru</button></div>
+  <div class="card"><div class="tw"><table><thead><tr><th class="c">No</th><th>Nama Guru</th><th>NIP</th><th>Mata Pelajaran</th><th class="c">Aksi</th></tr></thead><tbody>
+  ${teachers.map((t,i)=>`<tr><td class="c">${i+1}</td><td><div class="who">${avatar(t)}<b>${esc(t.name)}</b></div></td><td>${esc(fmtNip(t.nip))}</td><td>${esc(t.mapel)}</td>
+   <td class="c"><button class="btn sm" onclick="Teach.form('${t.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+   <button class="btn sm red" onclick="Teach.del('${t.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="5" class="muted" style="text-align:center;padding:20px">Belum ada data guru.</td></tr>'}
+  </tbody></table></div></div>`;
+}
+const Teach={
+  photo:'',
+  form(id){
+    const t=teachers.find(x=>x.id===id)||{name:'',nip:'',mapel:'',photo:'',password:'123456'}; Teach.photo=t.photo||'';
+    openModal(`<h3>${id?'Edit':'Tambah'} Guru</h3>
+      <label>Nama Lengkap (beserta gelar)</label><input type="text" id="tName" value="${esc(t.name)}">
+      <label>NIP (angka, 18 digit; boleh spasi)</label><input type="text" id="tNip" inputmode="numeric" value="${esc(fmtNip(t.nip))}">
+      <label>Mata Pelajaran</label><input type="text" id="tMapel" value="${esc(t.mapel)}">
+      <label>Kata Sandi Login</label><input type="text" id="tPass" value="${esc(t.password)}">
+      <label>Foto (opsional)</label>
+      <div class="row"><span id="tPrev">${t.photo?`<img class="avatar" src="${t.photo}">`:'<span class="avatar">?</span>'}</span><input type="file" id="tFile" accept="image/*" style="flex:1"></div>
+      <div class="row end" style="margin-top:16px"><button class="btn" onclick="closeModal()">Batal</button><button class="btn primary" onclick="Teach.save('${id||''}')">Simpan</button></div>`);
+    $('#tFile').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; Teach.photo=await resizeImage(f,160,false); $('#tPrev').innerHTML=`<img class="avatar" src="${Teach.photo}">`; };
+  },
+  save(id){
+    const name=$('#tName').value.trim(), nip=$('#tNip').value.replace(/\D/g,''), mapel=$('#tMapel').value.trim(), pass=$('#tPass').value.trim();
+    if(!name||!nip||!mapel||!pass) return toast('Semua kolom wajib diisi.','error');
+    if(nip.length<8) return toast('NIP tidak valid (minimal 8 digit).','error');
+    if(teachers.some(x=>x.nip===nip && x.id!==id)) return toast('NIP sudah terdaftar.','error');
+    if(id){
+      const t=teachers.find(x=>x.id===id);
+      if(t.nip!==nip) att.forEach(a=>{ if(a.nip===t.nip) a.nip=nip; });   // ikutkan riwayat absen
+      Object.assign(t,{name,nip,mapel,password:pass,photo:Teach.photo}); addLog('Admin','Edit guru',name);
+    } else { teachers.push({id:uid(),nip,name,mapel,password:pass,photo:Teach.photo}); addLog('Admin','Tambah guru',name); }
+    saveTeachers(); saveAtt(); closeModal(); toast('Data guru disimpan.','success'); vTeachers();
+  },
+  del(id){
+    const t=teachers.find(x=>x.id===id);
+    if(!confirmBox(`Hapus ${t.name}? Seluruh riwayat absensinya juga akan dihapus.`)) return;
+    teachers=teachers.filter(x=>x.id!==id); att=att.filter(a=>a.nip!==t.nip); saveTeachers(); saveAtt();
+    addLog('Admin','Hapus guru',t.name); toast('Guru dihapus.','success'); vTeachers();
+  }
+};
+window.Teach=Teach;
+
+/* Perkecil gambar → dataURL (hemat localStorage). contain=true: kotak penuh tanpa terpotong */
+function resizeImage(file,size,contain){
+  return new Promise(res=>{
+    const fr=new FileReader();
+    fr.onload=()=>{ const img=new Image(); img.onload=()=>{
+      const c=document.createElement('canvas'); c.width=c.height=size; const x=c.getContext('2d');
+      if(contain){ const k=Math.min(size/img.width,size/img.height), w=img.width*k, h=img.height*k; x.drawImage(img,(size-w)/2,(size-h)/2,w,h); res(c.toDataURL('image/png')); }
+      else { const k=Math.max(size/img.width,size/img.height), w=img.width*k, h=img.height*k; x.drawImage(img,(size-w)/2,(size-h)/2,w,h); res(c.toDataURL('image/jpeg',.8)); }
+    }; img.src=fr.result; };
+    fr.readAsDataURL(file);
+  });
+}
+
+/* =====================================================================
+   5. REKAP BULANAN + GRAFIK + DOWNLOAD
+   ===================================================================== */
+function vRecap(){
+  const {days,rows}=recapData(S.year,S.month);
+  const avg=rows.length?rows.reduce((a,r)=>a+r.pct,0)/rows.length:0;
+  const best=days?[...rows].sort((a,b)=>b.pct-a.pct||b.h-a.h)[0]:null;
+  $('#app').innerHTML=`
+  <div class="page-title"><i class="fa-solid fa-chart-column"></i> Rekap Kehadiran Bulanan</div>
+  <div class="card">
+    <div class="row">
+      <select id="rMon" style="width:auto">${BULAN.map((b,i)=>`<option value="${i}" ${i===S.month?'selected':''}>${b}</option>`).join('')}</select>
+      <input type="number" id="rYr" value="${S.year}" style="width:100px">
+      <div class="spacer"></div>
+      <button class="btn" onclick="Recap.manual()"><i class="fa-solid fa-pen-to-square"></i> Catat Manual</button>
+      <button class="btn red" onclick="Recap.pdf()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+      <button class="btn green" onclick="Recap.xlsx()"><i class="fa-solid fa-file-excel"></i> Excel</button>
+      <button class="btn" onclick="Recap.csv()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+    </div>
+    <div class="muted" style="margin-top:8px">Hari kerja efektif sampai saat ini: <b>${days}</b> hari. Rumus: % Kehadiran = (Hadir + Terlambat) ÷ Hari Kerja × 100%. Alpa = hari kerja tanpa catatan.</div>
+  </div>
+  <div class="grid g4" style="margin-top:16px">
+    <div class="card stat"><div class="ic" style="background:#1E3A8A"><i class="fa-solid fa-users"></i></div><div><b>${rows.length}</b><span>Total Guru</span></div></div>
+    <div class="card stat"><div class="ic" style="background:#10B981"><i class="fa-solid fa-percent"></i></div><div><b>${avg.toFixed(1)}%</b><span>Rata-rata Kehadiran</span></div></div>
+    <div class="card stat" style="grid-column:span 2"><div class="ic" style="background:#F59E0B"><i class="fa-solid fa-trophy"></i></div><div><b style="font-size:16px">${best?esc(best.name):'-'}</b><span>Guru paling disiplin${best?' ('+best.pct.toFixed(1)+'%)':''}</span></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h2><i class="fa-solid fa-chart-bar"></i> % Kehadiran per Guru</h2><div class="chartbox"><canvas id="chBar"></canvas></div></div>
+    <div class="card"><h2><i class="fa-solid fa-chart-pie"></i> Komposisi Kehadiran</h2><div class="chartbox"><canvas id="chPie"></canvas></div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h2><i class="fa-solid fa-table"></i> Tabel Rekap – ${BULAN[S.month]} ${S.year}</h2>
+    <div class="tw"><table><thead><tr><th class="c">No</th><th>Nama Guru</th><th>NIP</th><th class="c">Hadir</th><th class="c">Terlambat</th><th class="c">Izin</th><th class="c">Sakit</th><th class="c">Cuti</th><th class="c">Alpa</th><th class="c">% Kehadiran</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td class="c">${r.no}</td><td><b>${esc(r.name)}</b></td><td>${esc(fmtNip(r.nip))}</td><td class="c">${r.h}</td><td class="c">${r.te}</td><td class="c">${r.iz}</td><td class="c">${r.sk}</td><td class="c">${r.cu}</td><td class="c">${r.alpa}</td>
+      <td class="c"><span class="badge" style="background:${r.pct>=90?'#D1FAE5':r.pct>=75?'#FEF3C7':'#FEE2E2'};color:${r.pct>=90?'#065F46':r.pct>=75?'#92400E':'#991B1B'}">${r.pct.toFixed(1)}%</span></td></tr>`).join('')||'<tr><td colspan="10" style="text-align:center;padding:20px" class="muted">Belum ada guru.</td></tr>'}
+    </tbody></table></div></div>`;
+  $('#rMon').onchange=()=>{S.month=+$('#rMon').value;vRecap();};
+  $('#rYr').onchange=()=>{S.year=+$('#rYr').value||S.year;vRecap();};
+
+  chartObjs.push(new Chart($('#chBar'),{type:'bar',
+    data:{labels:rows.map(r=>r.name.split(',')[0]),datasets:[{label:'% Kehadiran',data:rows.map(r=>+r.pct.toFixed(1)),backgroundColor:rows.map(r=>r.pct>=90?'#10B981':r.pct>=75?'#F59E0B':'#DC2626'),borderRadius:6}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%'}}},plugins:{legend:{display:false}}}}));
+  const sum=k=>rows.reduce((a,r)=>a+r[k],0);
+  chartObjs.push(new Chart($('#chPie'),{type:'doughnut',
+    data:{labels:['Hadir','Terlambat','Izin','Sakit','Cuti','Alpa'],datasets:[{data:[sum('h'),sum('te'),sum('iz'),sum('sk'),sum('cu'),sum('alpa')],backgroundColor:['#10B981','#F59E0B','#3B82F6','#EC4899','#8B5CF6','#DC2626']}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}}));
+}
+
+const Recap={
+  title(){ return `REKAP KEHADIRAN GURU – BULAN ${BULAN[S.month].toUpperCase()} ${S.year}`; },
+  head:['No','Nama Guru','NIP','Hadir','Terlambat','Izin','Sakit','Cuti','Alpa','% Kehadiran'],
+  body(){ return recapData(S.year,S.month).rows.map(r=>[r.no,r.name,fmtNip(r.nip),r.h,r.te,r.iz,r.sk,r.cu,r.alpa,r.pct.toFixed(1)+'%']); },
+  fname(ext){ return `Rekap_Kehadiran_Guru_${BULAN[S.month]}_${S.year}.${ext}`; },
+
+  /* ---- PDF: kop + logo + tabel + tanda tangan Kepala Sekolah ---- */
+  async pdf(){
+    if(!window.jspdf) return toast('Library PDF belum termuat (butuh internet).','error');
+    const {jsPDF}=window.jspdf, doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight();
+    const logo=await logoPng(); if(logo) doc.addImage(logo,'PNG',15,8,24,24);
+    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text(('PEMERINTAH '+settings.instansi.replace(/^Dinas Pendidikan\s*/i,'')).toUpperCase().replace('PEMERINTAH KABUPATEN','PEMERINTAH KABUPATEN'),W/2,13,{align:'center'});
+    doc.setFontSize(12); doc.text(settings.instansi.toUpperCase(),W/2,19,{align:'center'});
+    doc.setFontSize(16); doc.text(settings.schoolName.toUpperCase(),W/2,26,{align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(settings.address,W/2,31,{align:'center'});
+    doc.setLineWidth(.8); doc.line(15,35,W-15,35); doc.setLineWidth(.2); doc.line(15,36.2,W-15,36.2);
+    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text(Recap.title(),W/2,44,{align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(`Hari kerja efektif: ${recapData(S.year,S.month).days} hari`,W/2,49,{align:'center'});
+    doc.autoTable({startY:53,head:[Recap.head],body:Recap.body(),theme:'grid',styles:{fontSize:9,cellPadding:2},
+      headStyles:{fillColor:[30,58,138],halign:'center'},columnStyles:{0:{halign:'center',cellWidth:10},3:{halign:'center'},4:{halign:'center'},5:{halign:'center'},6:{halign:'center'},7:{halign:'center'},8:{halign:'center'},9:{halign:'center',fontStyle:'bold'}},margin:{left:15,right:15}});
+    let y=doc.lastAutoTable.finalY+10; if(y>H-52){ doc.addPage(); y=25; }
+    const x=W-85; doc.setFontSize(10); doc.setFont('helvetica','normal');
+    doc.text(`${settings.city}, ${tglIndo()}`,x,y); doc.text(`Kepala ${settings.schoolName}`,x,y+5);
+    doc.setFont('helvetica','bold'); const ny=y+30; doc.text(settings.headName,x,ny);
+    doc.setLineWidth(.3); doc.line(x,ny+1,x+doc.getTextWidth(settings.headName),ny+1);
+    doc.setFont('helvetica','normal'); doc.text(`NIP. ${settings.headNip}`,x,ny+6);
+    doc.save(Recap.fname('pdf')); addLog('Admin','Unduh rekap PDF',`${BULAN[S.month]} ${S.year}`); toast('PDF berhasil dibuat.','success');
+  },
+  xlsx(){
+    if(!window.XLSX) return toast('Library Excel belum termuat (butuh internet).','error');
+    const ws=XLSX.utils.aoa_to_sheet([[settings.schoolName.toUpperCase()],[Recap.title()],[],Recap.head,...Recap.body(),[],[`${settings.city}, ${tglIndo()}`],[`Kepala ${settings.schoolName}`],[],[],[settings.headName],['NIP. '+settings.headNip]]);
+    ws['!cols']=[{wch:5},{wch:32},{wch:24},{wch:8},{wch:11},{wch:7},{wch:7},{wch:7},{wch:7},{wch:14}];
+    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:9}},{s:{r:1,c:0},e:{r:1,c:9}}];
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Rekap');
+    XLSX.writeFile(wb,Recap.fname('xlsx')); addLog('Admin','Unduh rekap Excel',`${BULAN[S.month]} ${S.year}`); toast('Excel berhasil dibuat.','success');
+  },
+  csv(){
+    const q=v=>`"${String(v).replace(/"/g,'""')}"`;
+    const txt='\ufeff'+[Recap.head,...Recap.body()].map(r=>r.map(q).join(',')).join('\r\n');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/csv;charset=utf-8'})); a.download=Recap.fname('csv'); a.click(); URL.revokeObjectURL(a.href);
+    addLog('Admin','Unduh rekap CSV',`${BULAN[S.month]} ${S.year}`); toast('CSV berhasil dibuat.','success');
+  },
+  /* Admin mencatat/mengoreksi kehadiran guru secara manual */
+  manual(){
+    openModal(`<h3>Catat Kehadiran Manual</h3><p class="muted">Untuk guru yang lupa absen, izin, sakit, atau koreksi data.</p>
+      <label>Guru</label><select id="mTeacher">${teachers.map(t=>`<option value="${t.nip}">${esc(t.name)}</option>`).join('')}</select>
+      <div class="cols"><div><label>Tanggal</label><input type="date" id="mDate" value="${todayStr()}"></div>
+      <div><label>Status</label><select id="mStat">${STATUS_LIST.map(s=>`<option>${s}</option>`).join('')}<option value="__hapus">Hapus catatan</option></select></div></div>
+      <div class="cols"><div><label>Jam Masuk</label><input type="time" id="mIn" value="07:00"></div><div><label>Jam Pulang</label><input type="time" id="mOut" value="${settings.outTime}"></div></div>
+      <label>Keterangan</label><input type="text" id="mNote" placeholder="Opsional">
+      <div class="row end" style="margin-top:14px"><button class="btn" onclick="closeModal()">Batal</button><button class="btn primary" onclick="Recap.saveManual()">Simpan</button></div>`);
+  },
+  saveManual(){
+    const nip=$('#mTeacher').value, date=$('#mDate').value, st=$('#mStat').value, note=$('#mNote').value.trim();
+    if(!date) return toast('Tanggal wajib diisi.','error');
+    let rec=getRec(nip,date);
+    if(st==='__hapus'){ if(!rec) return toast('Tidak ada catatan pada tanggal itu.','warn'); att=att.filter(a=>a!==rec); }
+    else {
+      if(!rec){ rec={id:uid(),nip,date}; att.push(rec); }
+      rec.status=st; rec.note=note||'(dicatat admin)'; delete rec.demo;
+      if(st==='Hadir'||st==='Terlambat'){
+        const base={lat:settings.lat,lng:settings.lng,dist:0,inside:true,address:'',selfie:''};
+        rec.in={...base,time:$('#mIn').value+':00'}; rec.out={...base,time:$('#mOut').value+':00'};
+      } else { delete rec.in; delete rec.out; }
+    }
+    saveAtt(); addLog('Admin','Catat manual',`${teachers.find(t=>t.nip===nip)?.name} • ${date} • ${st==='__hapus'?'dihapus':st}`);
+    closeModal(); toast('Catatan disimpan.','success'); vRecap();
+  }
+};
+window.Recap=Recap;
+
+function logoPng(){
+  return new Promise(r=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'); c.width=c.height=256; c.getContext('2d').drawImage(img,0,0,256,256); r(c.toDataURL('image/png')); }; img.onerror=()=>r(null); img.src=settings.logo||DEFAULT_LOGO; });
+}
+
+/* =====================================================================
+   6. LOG AKTIVITAS
+   ===================================================================== */
+function vLogs(){
+  $('#app').innerHTML=`<div class="page-title"><i class="fa-solid fa-clock-rotate-left"></i> Log Aktivitas<div class="spacer"></div>
+    <button class="btn red sm" onclick="if(confirmBox('Hapus semua log?')){logs=[];LS.set('tp_logs',logs);vLogs();}"><i class="fa-solid fa-trash"></i> Bersihkan</button></div>
+  <div class="card"><div class="tw"><table><thead><tr><th>Waktu</th><th>Pelaku</th><th>Aktivitas</th><th>Detail</th></tr></thead><tbody>
+  ${logs.map(l=>{ const d=new Date(l.t); const nm=l.actor==='Admin'?'Admin':(teachers.find(t=>t.nip===l.actor)?.name||l.actor);
+    return `<tr><td style="white-space:nowrap">${tglIndo(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}</td><td>${esc(nm)}</td><td><b>${esc(l.action)}</b></td><td>${esc(l.detail)}</td></tr>`; }).join('')||'<tr><td colspan="4" class="muted" style="text-align:center;padding:20px">Belum ada aktivitas.</td></tr>'}
+  </tbody></table></div></div>`;
+}
+
+/* =====================================================================
+   7. PENGATURAN
+   ===================================================================== */
+function vSettings(){
+  const s=settings;
+  $('#app').innerHTML=`
+  <div class="page-title"><i class="fa-solid fa-gear"></i> Pengaturan</div>
+  <div class="grid g2">
+    <div class="card"><h2><i class="fa-solid fa-school"></i> Identitas & Logo Sekolah</h2>
+      <div class="row" style="margin-bottom:6px"><img id="sLogoPrev" class="logo" style="background:#F1F5F9;width:70px;height:70px" src="${s.logo||DEFAULT_LOGO}"><div style="flex:1">
+        <input type="file" id="sLogo" accept="image/*"><div class="muted">Unggah PNG/JPG (otomatis diperkecil). </div>
+        <button class="btn sm" style="margin-top:6px" onclick="Pref.resetLogo()">Pakai logo bawaan</button></div></div>
+      <label>Nama Sekolah</label><input type="text" id="sName" value="${esc(s.schoolName)}">
+      <label>Instansi</label><input type="text" id="sInst" value="${esc(s.instansi)}">
+      <label>Alamat</label><input type="text" id="sAddr" value="${esc(s.address)}">
+      <label>Kota (untuk tanda tangan rekap)</label><input type="text" id="sCity" value="${esc(s.city)}">
+    </div>
+
+    <div class="card"><h2><i class="fa-solid fa-user-tie"></i> Data Kepala Sekolah</h2>
+      <label>Nama Kepala Sekolah</label><input type="text" id="sHead" value="${esc(s.headName)}">
+      <label>NIP</label><input type="text" id="sHeadNip" value="${esc(s.headNip)}">
+      <p class="muted" style="margin-top:8px">Tampil di footer aplikasi dan tanda tangan rekap PDF/Excel.</p>
+      <h2 style="margin-top:20px"><i class="fa-solid fa-key"></i> Akun Admin</h2>
+      <div class="cols"><div><label>Username</label><input type="text" id="sAU" value="${esc(s.adminUser)}"></div><div><label>Kata Sandi</label><input type="text" id="sAP" value="${esc(s.adminPass)}"></div></div>
+    </div>
+
+    <div class="card"><h2><i class="fa-solid fa-clock"></i> Jam & Hari Kerja</h2>
+      <div class="cols"><div><label>Batas Terlambat (check-in lewat jam)</label><input type="time" id="sLate" value="${s.lateTime}"></div>
+      <div><label>Jam Pulang</label><input type="time" id="sOut" value="${s.outTime}"></div></div>
+      <label>Hari Kerja</label>
+      <div class="row">${HARI.map((h,i)=>`<label style="display:flex;gap:5px;align-items:center;font-weight:400;margin:0"><input type="checkbox" class="wd" value="${i}" ${s.workDays.includes(i)?'checked':''} style="width:auto">${h}</label>`).join('')}</div>
+      <label>Hari Libur</label>
+      <div class="row"><input type="date" id="hDate" style="flex:1"><input type="text" id="hName" placeholder="Nama libur" style="flex:2"><button class="btn sm" onclick="Pref.addHol()"><i class="fa-solid fa-plus"></i></button></div>
+      <div class="chips" id="holList"></div>
+    </div>
+
+    <div class="card"><h2><i class="fa-solid fa-map-location-dot"></i> Lokasi Sekolah & Radius</h2>
+      <div id="setmap"></div>
+      <p class="muted" style="margin-top:6px">Klik peta untuk memindahkan titik sekolah.</p>
+      <div class="cols"><div><label>Latitude</label><input type="number" step="any" id="sLat" value="${s.lat}"></div><div><label>Longitude</label><input type="number" step="any" id="sLng" value="${s.lng}"></div></div>
+      <div class="cols"><div><label>Radius maksimal (meter)</label><input type="number" id="sRad" value="${s.radius}" min="10"></div>
+      <div style="align-self:end"><button class="btn" style="width:100%" onclick="Pref.useMyLoc()"><i class="fa-solid fa-crosshairs"></i> Pakai lokasi saya</button></div></div>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="sRev" ${s.reverseGeo?'checked':''} style="width:auto"> Cari alamat otomatis (reverse geocoding, butuh internet)</label>
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="sSim" ${s.simulate?'checked':''} style="width:auto"> Mode simulasi lokasi (untuk uji coba tanpa GPS)</label>
+    </div>
+  </div>
+  <div class="row end" style="margin-top:16px"><button class="btn primary big" style="max-width:260px" onclick="Pref.save()"><i class="fa-solid fa-floppy-disk"></i> Simpan Pengaturan</button></div>
+
+  <div class="card" style="margin-top:16px"><h2><i class="fa-solid fa-database"></i> Data</h2>
+    <div class="row">
+      <button class="btn" onclick="Pref.backup()"><i class="fa-solid fa-download"></i> Cadangkan (JSON)</button>
+      <label class="btn" style="margin:0"><i class="fa-solid fa-upload"></i> Pulihkan<input type="file" accept=".json" style="display:none" onchange="Pref.restore(this.files[0])"></label>
+      <button class="btn" onclick="Pref.reseed()"><i class="fa-solid fa-wand-magic-sparkles"></i> Muat ulang data contoh</button>
+      <button class="btn red" onclick="Pref.wipe()"><i class="fa-solid fa-trash"></i> Hapus semua absensi</button>
+    </div></div>`;
+  Pref.holidays=[...s.holidays]; Pref.drawHol();
+  $('#sLogo').onchange=async e=>{ const f=e.target.files[0]; if(!f) return; Pref.logo=await resizeImage(f,256,true); $('#sLogoPrev').src=Pref.logo; };
+  Pref.logo=s.logo;
+  mapObj=L.map('setmap').setView([s.lat,s.lng],16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(mapObj);
+  Pref.mk=L.marker([s.lat,s.lng]).addTo(mapObj); Pref.ci=L.circle([s.lat,s.lng],{radius:s.radius,color:'#10B981',fillOpacity:.15}).addTo(mapObj);
+  mapObj.on('click',e=>Pref.setLoc(e.latlng.lat,e.latlng.lng));
+  ['sLat','sLng','sRad'].forEach(id=>$('#'+id).addEventListener('change',()=>Pref.fromInputs()));
+}
+const Pref={
+  holidays:[],logo:'',mk:null,ci:null,
+  setLoc(lat,lng){ $('#sLat').value=+lat.toFixed(6); $('#sLng').value=+lng.toFixed(6); Pref.fromInputs(); },
+  fromInputs(){ const la=+$('#sLat').value, ln=+$('#sLng').value, r=+$('#sRad').value||100; if(isNaN(la)||isNaN(ln)) return;
+    Pref.mk.setLatLng([la,ln]); Pref.ci.setLatLng([la,ln]); Pref.ci.setRadius(r); mapObj.setView([la,ln]); },
+  useMyLoc(){
+    if(!navigator.geolocation) return toast('Browser tidak mendukung GPS.','error');
+    toast('Membaca lokasi Anda…','info');
+    navigator.geolocation.getCurrentPosition(p=>{ Pref.setLoc(p.coords.latitude,p.coords.longitude); mapObj.setZoom(18); toast('Titik diambil dari lokasi Anda. Jangan lupa Simpan.','success'); },
+      ()=>toast('Gagal mengambil lokasi. Periksa izin lokasi.','error'),{enableHighAccuracy:true,timeout:15000});
+  },
+  addHol(){ const d=$('#hDate').value, n=$('#hName').value.trim()||'Libur'; if(!d) return toast('Pilih tanggal libur.','error');
+    if(Pref.holidays.some(h=>h.date===d)) return toast('Tanggal sudah ada.','warn'); Pref.holidays.push({date:d,name:n}); Pref.holidays.sort((a,b)=>a.date.localeCompare(b.date)); $('#hName').value=''; Pref.drawHol(); },
+  delHol(d){ Pref.holidays=Pref.holidays.filter(h=>h.date!==d); Pref.drawHol(); },
+  drawHol(){ $('#holList').innerHTML=Pref.holidays.map(h=>`<span class="chip">${tglIndoStr(h.date)} – ${esc(h.name)}<button onclick="Pref.delHol('${h.date}')"><i class="fa-solid fa-xmark"></i></button></span>`).join('')||'<span class="muted">Belum ada hari libur.</span>'; },
+  resetLogo(){ Pref.logo=''; $('#sLogoPrev').src=DEFAULT_LOGO; },
+  save(){
+    const lat=+$('#sLat').value, lng=+$('#sLng').value, rad=+$('#sRad').value;
+    if(isNaN(lat)||isNaN(lng)||lat<-90||lat>90||lng<-180||lng>180) return toast('Koordinat tidak valid.','error');
+    if(!rad||rad<10) return toast('Radius minimal 10 meter.','error');
+    const wd=$$('.wd').filter(c=>c.checked).map(c=>+c.value); if(!wd.length) return toast('Pilih minimal satu hari kerja.','error');
+    if(!$('#sName').value.trim()||!$('#sHead').value.trim()) return toast('Nama sekolah dan kepala sekolah wajib diisi.','error');
+    if(!$('#sAU').value.trim()||!$('#sAP').value.trim()) return toast('Akun admin tidak boleh kosong.','error');
+    Object.assign(settings,{schoolName:$('#sName').value.trim(),instansi:$('#sInst').value.trim(),address:$('#sAddr').value.trim(),city:$('#sCity').value.trim(),logo:Pref.logo,
+      headName:$('#sHead').value.trim(),headNip:$('#sHeadNip').value.trim(),adminUser:$('#sAU').value.trim(),adminPass:$('#sAP').value.trim(),
+      lateTime:$('#sLate').value||'07:15',outTime:$('#sOut').value||'14:00',workDays:wd,holidays:Pref.holidays,lat,lng,radius:rad,
+      reverseGeo:$('#sRev').checked,simulate:$('#sSim').checked});
+    if(saveSettings()){ addLog('Admin','Ubah pengaturan',''); toast('Pengaturan disimpan.','success'); applyBranding(); }
+  },
+  backup(){
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify({settings,teachers,att,logs})],{type:'application/json'}));
+    a.download=`cadangan_absensi_${todayStr()}.json`; a.click(); URL.revokeObjectURL(a.href);
+  },
+  restore(f){
+    if(!f) return; const fr=new FileReader();
+    fr.onload=()=>{ try{ const d=JSON.parse(fr.result); if(!d.teachers||!d.att) throw 0;
+      settings=Object.assign({},DEFAULT_SETTINGS,d.settings||{}); teachers=d.teachers; att=d.att; logs=d.logs||[];
+      saveSettings(); saveTeachers(); saveAtt(); LS.set('tp_logs',logs); toast('Data berhasil dipulihkan.','success'); render(); }catch(e){ toast('File cadangan tidak valid.','error'); } };
+    fr.readAsText(f);
+  },
+  reseed(){ if(!confirmBox('Ganti SEMUA data guru & absensi dengan data contoh?')) return; teachers=seedTeachers(); att=seedAttendance(); saveTeachers(); saveAtt(); addLog('Admin','Muat data contoh',''); toast('Data contoh dimuat.','success'); },
+  wipe(){ if(!confirmBox('Hapus SEMUA data absensi? Tindakan ini tidak dapat dibatalkan.')) return; att=[]; saveAtt(); addLog('Admin','Hapus semua absensi',''); toast('Seluruh data absensi dihapus.','success'); }
+};
+window.Pref=Pref;
+
+/* ---------- Mulai ---------- */
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+render();
+</script>
+</body>
+</html>
+
+</body></html>
