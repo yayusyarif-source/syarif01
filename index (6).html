@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+<meta name="theme-color" content="#14532d" />
+<title>Absensi Guru - SMPN 4 Tinggimoncong</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --primary: #14532d;
+    --primary-light: #166534;
+    --accent: #d4af37;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --danger: #dc2626;
+    --warning: #f59e0b;
+    --success: #16a34a;
+    --info: #0ea5e9;
+  }
+  html, body { font-family: 'Poppins', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  button, input, select { font-family: inherit; font-size: 16px; outline: none; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15); position: sticky; top: 0; z-index: 100;
+  }
+  .header .logo { width: 42px; height: 42px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary); font-size: 20px; flex-shrink: 0; }
+  .header .info { flex: 1; min-width: 0; }
+  .header h1 { font-size: 14px; font-weight: 600; line-height: 1.2; }
+  .header p { font-size: 11px; opacity: .85; }
+  .header .user-badge { font-size: 11px; background: rgba(255,255,255,.2); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+
+  /* CONTAINER */
+  .container { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+  /* CARD */
+  .card { background: var(--card); border-radius: 14px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 14px; border: 1px solid var(--border); }
+  .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; color: var(--primary); }
+  .card h2 i { color: var(--accent); }
+
+  /* BUTTON */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: transform .15s, box-shadow .15s; width: 100%; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-accent { background: var(--accent); color: var(--primary); }
+  .btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-sm { padding: 8px 12px; font-size: 13px; width: auto; }
+
+  /* INPUT */
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .3px; }
+  .field input, .field select { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; background: #fff; transition: border-color .15s; }
+  .field input:focus, .field select:focus { border-color: var(--primary); }
+
+  /* LOGIN */
+  #loginScreen { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 24px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); }
+  .login-box { background: #fff; padding: 28px 22px; border-radius: 18px; max-width: 420px; margin: 0 auto; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,.25); }
+  .login-logo { width: 70px; height: 70px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 30px; margin: 0 auto 14px; }
+  .login-box h1 { text-align: center; font-size: 17px; color: var(--primary); margin-bottom: 4px; }
+  .login-box p.sub { text-align: center; font-size: 12px; color: var(--text-muted); margin-bottom: 22px; }
+
+  /* MENU TABS */
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 9px 16px; background: #fff; border: 1.5px solid var(--border); border-radius: 24px; font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer; color: var(--text-muted); transition: all .15s; }
+  .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* ABSEN BUTTONS */
+  .absen-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media(min-width:520px){ .absen-grid { grid-template-columns: repeat(3, 1fr); } }
+  .absen-btn { padding: 18px 10px; border-radius: 12px; border: 2px solid transparent; background: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; transition: all .2s; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .absen-btn i { font-size: 26px; }
+  .absen-btn:active { transform: scale(.96); }
+  .absen-btn[data-status="Hadir"] { color: var(--success); border-color: #bbf7d0; }
+  .absen-btn[data-status="Hadir"]:hover { background: #f0fdf4; }
+  .absen-btn[data-status="Izin"] { color: var(--info); border-color: #bae6fd; }
+  .absen-btn[data-status="Izin"]:hover { background: #f0f9ff; }
+  .absen-btn[data-status="Sakit"] { color: var(--warning); border-color: #fde68a; }
+  .absen-btn[data-status="Sakit"]:hover { background: #fffbeb; }
+  .absen-btn[data-status="Dinas Luar"] { color: #7c3aed; border-color: #ddd6fe; }
+  .absen-btn[data-status="Dinas Luar"]:hover { background: #f5f3ff; }
+  .absen-btn[data-status="Cuti"] { color: var(--danger); border-color: #fecaca; }
+  .absen-btn[data-status="Cuti"]:hover { background: #fef2f2; }
+
+  /* MAP */
+  #map { height: 220px; border-radius: 12px; margin-top: 12px; border: 1px solid var(--border); z-index: 1; }
+  .loc-info { font-size: 12px; color: var(--text-muted); margin-top: 8px; padding: 10px 12px; background: #f8fafc; border-radius: 8px; line-height: 1.5; }
+  .loc-info strong { color: var(--primary); }
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-in { background: #dcfce7; color: #166534; }
+  .badge-out { background: #fee2e2; color: #991b1b; }
+
+  /* HISTORY */
+  .hist-item { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .hist-item:last-child { border-bottom: none; }
+  .hist-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; flex-shrink: 0; }
+  .hist-body { flex: 1; min-width: 0; }
+  .hist-body h4 { font-size: 13px; font-weight: 600; }
+  .hist-body p { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .hist-time { font-size: 12px; font-weight: 600; color: var(--primary); }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 640px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { background: var(--primary); color: #fff; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .3px; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  tr:hover td { background: #f1f5f9; }
+  .pct { font-weight: 700; }
+  .pct.good { color: var(--success); }
+  .pct.mid { color: var(--warning); }
+  .pct.bad { color: var(--danger); }
+
+  /* FILTER ROW */
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-row .field { flex: 1; min-width: 130px; margin-bottom: 0; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,.2); z-index: 9999; transition: transform .3s; max-width: 90vw; text-align: center; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--danger); }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+  @media(min-width:600px){ .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat-box { background: #fff; padding: 14px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+  .stat-box .num { font-size: 22px; font-weight: 700; color: var(--primary); }
+  .stat-box .lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* MODAL */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 9998; padding: 20px; }
+  .modal-bg.show { display: flex; }
+  .modal { background: #fff; padding: 22px; border-radius: 16px; max-width: 400px; width: 100%; text-align: center; }
+  .modal h3 { font-size: 16px; margin-bottom: 8px; color: var(--primary); }
+  .modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+
+  .hidden { display: none !important; }
+  .text-center { text-align: center; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN SCREEN ================= -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">S4</div>
+    <h1>SMPN 4 TINGGIMONCONG</h1>
+    <p class="sub">Dinas Pendidikan Kabupaten Gowa</p>
+    <div class="field">
+      <label>Pilih Nama Guru</label>
+      <select id="loginGuru"></select>
+    </div>
+    <div class="field">
+      <label>PIN (default: 1234)</label>
+      <input type="password" id="loginPin" inputmode="numeric" placeholder="••••" maxlength="6" />
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()">
+      <i class="fa-solid fa-right-to-bracket"></i> Masuk
+    </button>
+    <p style="text-align:center;font-size:11px;color:#94a3b8;margin-top:14px">
+      © 2026 SMPN 4 Tinggimoncong · Kab. Gowa
+    </p>
+  </div>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="app" class="hidden">
+  <div class="header">
+    <div class="logo">S4</div>
+    <div class="info">
+      <h1>SMPN 4 Tinggimoncong</h1>
+      <p id="headerDate">-</p>
+    </div>
+    <div class="user-badge" id="headerUser">-</div>
+  </div>
+
+  <div class="container">
+    <!-- TABS -->
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="absen"><i class="fa-solid fa-fingerprint"></i> Absen</div>
+      <div class="tab" data-tab="rekap"><i class="fa-solid fa-user"></i> Rekap Saya</div>
+      <div class="tab" data-tab="bulanan"><i class="fa-solid fa-calendar-days"></i> Rekap Bulanan</div>
+      <div class="tab" data-tab="dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</div>
+      <div class="tab" data-tab="logout" style="color:#dc2626;border-color:#fecaca"><i class="fa-solid fa-right-from-bracket"></i> Keluar</div>
+    </div>
+
+    <!-- ===== TAB: ABSEN ===== -->
+    <div id="tab-absen">
+      <div class="card">
+        <h2><i class="fa-solid fa-clock"></i> Waktu Sekarang</h2>
+        <div style="text-align:center;padding:6px 0">
+          <div id="liveClock" style="font-size:34px;font-weight:700;color:var(--primary);letter-spacing:2px">--:--:--</div>
+          <div id="liveDate" style="font-size:13px;color:var(--text-muted);margin-top:4px">-</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><i class="fa-solid fa-location-dot"></i> Lokasi Absen</h2>
+        <div class="loc-info" id="locInfo">
+          <i class="fa-solid fa-spinner fa-spin"></i> Mengambil lokasi...
+        </div>
+        <div id="map"></div>
+        <button class="btn btn-outline btn-sm mt-8" onclick="refreshLocation()" style="width:100%">
+          <i class="fa-solid fa-rotate"></i> Perbarui Lokasi
+        </button>
+      </div>
+
+      <div class="card">
+        <h2><i class="fa-solid fa-hand-point-up"></i> Pilih Status Kehadiran</h2>
+        <div class="absen-grid">
+          <button class="absen-btn" data-status="Hadir" onclick="openAbsen('Hadir')">
+            <i class="fa-solid fa-circle-check"></i> Hadir
+          </button>
+          <button class="absen-btn" data-status="Izin" onclick="openAbsen('Izin')">
+            <i class="fa-solid fa-envelope-open-text"></i> Izin
+          </button>
+          <button class="absen-btn" data-status="Sakit" onclick="openAbsen('Sakit')">
+            <i class="fa-solid fa-notes-medical"></i> Sakit
+          </button>
+          <button class="absen-btn" data-status="Dinas Luar" onclick="openAbsen('Dinas Luar')">
+            <i class="fa-solid fa-briefcase"></i> Dinas Luar
+          </button>
+          <button class="absen-btn" data-status="Cuti" onclick="openAbsen('Cuti')">
+            <i class="fa-solid fa-plane-departure"></i> Cuti
+          </button>
+          <button class="absen-btn" data-status="Pulang" onclick="openAbsen('Pulang')" style="color:#0f172a;border-color:#cbd5e1">
+            <i class="fa-solid fa-house-chimney"></i> Absen Pulang
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Hari Ini</h2>
+        <div id="todayHistory"><p style="font-size:13px;color:var(--text-muted);text-align:center;padding:12px">Belum ada absen hari ini</p></div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: REKAP SAYA ===== -->
+    <div id="tab-rekap" class="hidden">
+      <div class="card">
+        <h2><i class="fa-solid fa-user-check"></i> Rekap Kehadiran Saya</h2>
+        <div class="filter-row">
+          <div class="field"><label>Dari Tanggal</label><input type="date" id="rekapStart"></div>
+          <div class="field"><label>Sampai Tanggal</label><input type="date" id="rekapEnd"></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="loadMyRekap()" style="width:100%">
+          <i class="fa-solid fa-search"></i> Tampilkan Rekap
+        </button>
+      </div>
+      <div class="stats" id="myStats"></div>
+      <div class="card">
+        <h2><i class="fa-solid fa-list"></i> Detail Absensi</h2>
+        <div class="table-wrap">
+          <table id="myRekapTable">
+            <thead><tr><th>Tanggal</th><th>Status</th><th>Jam</th><th>Lokasi</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: REKAP BULANAN ===== -->
+    <div id="tab-bulanan" class="hidden">
+      <div class="card">
+        <h2><i class="fa-solid fa-calendar-check"></i> Rekap Bulanan Semua Guru</h2>
+        <div class="filter-row">
+          <div class="field">
+            <label>Bulan</label>
+            <select id="blnBulan">
+              <option value="1">Januari</option><option value="2">Februari</option>
+              <option value="3">Maret</option><option value="4">April</option>
+              <option value="5">Mei</option><option value="6">Juni</option>
+              <option value="7">Juli</option><option value="8">Agustus</option>
+              <option value="9">September</option><option value="10">Oktober</option>
+              <option value="11">November</option><option value="12">Desember</option>
+            </select>
+          </div>
+          <div class="field"><label>Tahun</label><input type="number" id="blnTahun" value="2026" min="2020" max="2100"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="loadBulanan()" style="flex:1"><i class="fa-solid fa-eye"></i> Tampilkan</button>
+          <button class="btn btn-accent btn-sm" onclick="exportExcel()" style="flex:1"><i class="fa-solid fa-file-excel"></i> Excel</button>
+          <button class="btn btn-danger btn-sm" onclick="exportPDF()" style="flex:1"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2 id="blnTitle"><i class="fa-solid fa-table"></i> Tabel Rekap</h2>
+        <div class="table-wrap">
+          <table id="bulananTable">
+            <thead>
+              <tr>
+                <th>No</th><th>Nama Guru</th><th>NIP</th>
+                <th>Hadir</th><th>Izin</th><th>Sakit</th><th>Dinas Luar</th><th>Cuti</th>
+                <th>Total</th><th>%</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: DASHBOARD ===== -->
+    <div id="tab-dashboard" class="hidden">
+      <div class="card">
+        <h2><i class="fa-solid fa-users-viewfinder"></i> Kehadiran Hari Ini</h2>
+        <div class="stats">
+          <div class="stat-box"><div class="num" id="dashHadir">0</div><div class="lbl">Hadir</div></div>
+          <div class="stat-box"><div class="num" id="dashIzin">0</div><div class="lbl">Izin/Sakit</div></div>
+          <div class="stat-box"><div class="num" id="dashBelum">0</div><div class="lbl">Belum Absen</div></div>
+          <div class="stat-box"><div class="num" id="dashTotal">0</div><div class="lbl">Total Guru</div></div>
+        </div>
+        <div class="table-wrap mt-12">
+          <table id="dashTable">
+            <thead><tr><th>Nama</th><th>Status</th><th>Jam</th><th>Lokasi</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2><i class="fa-solid fa-chart-line"></i> Grafik Kehadiran Bulan Ini</h2>
+        <canvas id="chartKehadiran" height="180"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3 id="modalTitle">Konfirmasi Absen</h3>
+    <p id="modalDesc">-</p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="confirmAbsen()">Ya, Absen</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   KONFIGURASI & DATA
+   ============================================================ */
+const SCHOOL = {
+  name: "SMPN 4 Tinggimoncong",
+  dinas: "Dinas Pendidikan Kabupaten Gowa",
+  kepala: "Syafruddin, S.Pd., M.Si.",
+  // Koordinat default sekolah (Kec. Tinggimoncong, Kab. Gowa)
+  lat: -5.2445,
+  lng: 119.7830,
+  radiusMeter: 500
+};
+
+const GURU_LIST = [
+  { id: 1, nama: "Syafruddin, S.Pd., M.Si.",       nip: "196907271995031003", jabatan: "Kepala Sekolah" },
+  { id: 2, nama: "Nurjannah, S.Pd.",               nip: "197106252010012004" },
+  { id: 3, nama: "Nawir, S.Pd.Gr",                 nip: "198905110001" },
+  { id: 4, nama: "St. Ulil Asmi, S.Pd., Gr.",      nip: "200011120002" },
+  { id: 5, nama: "Satriani, S.Pd., Gr.",           nip: "198710020003" },
+  { id: 6, nama: "Nurmiati, S.Pd., Gr.",           nip: "199906070004" },
+  { id: 7, nama: "Ibnu Nandar Almudatsir, S.Pd.",  nip: "200002080005" },
+  { id: 8, nama: "Nur Indah Sari, S.Pd.",          nip: "200007110006" },
+  { id: 9, nama: "Satriah, A.Ma.",                 nip: "200901010007" }
+];
+
+const PIN_DEFAULT = "1234";
+const DB_KEY = "absensi_smpn4_data_v1";
+const SESSION_KEY = "absensi_smpn4_session_v1";
+
+let currentUser = null;
+let currentLocation = null;
+let map, marker, circle;
+let liveClockInterval, liveDataInterval;
+let currentAbsenStatus = null;
+let chartInstance = null;
+
+/* ============================================================
+   STORAGE HELPERS
+   ============================================================ */
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(DB_KEY)) || []; }
+  catch(e) { return []; }
+}
+function saveData(data) {
+  try { localStorage.setItem(DB_KEY, JSON.stringify(data)); } catch(e) {
+    showToast("Penyimpanan penuh!", true);
+  }
+}
+function addAbsen(rec) {
+  const data = loadData();
+  data.push(rec);
+  saveData(data);
+}
+
+/* ============================================================
+   UTILS
+   ============================================================ */
+function pad(n) { return n < 10 ? "0" + n : "" + n; }
+function todayStr(d = new Date()) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function fmtTime(d = new Date()) { return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+function fmtTimeShort(d = new Date()) { return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function dayName(d) { return ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"][d.getDay()]; }
+function monthName(m) { return ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][m-1]; }
+
+function showToast(msg, isErr = false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show" + (isErr ? " error" : "");
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => t.className = "toast" + (isErr ? " error" : ""), 2800);
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function initLogin() {
+  const sel = document.getElementById("loginGuru");
+  sel.innerHTML = '<option value="">-- Pilih Nama --</option>' +
+    GURU_LIST.map(g => `<option value="${g.id}">${g.nama} (${g.nip})</option>`).join("");
+
+  const saved = localStorage.getItem(SESSION_KEY);
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      const g = GURU_LIST.find(x => x.id === s.id);
+      if (g) { currentUser = g; showApp(); }
+    } catch(e) { localStorage.removeItem(SESSION_KEY); }
+  }
+}
+
+function doLogin() {
+  const id = parseInt(document.getElementById("loginGuru").value);
+  const pin = document.getElementById("loginPin").value.trim();
+  if (!id) { showToast("Pilih nama guru terlebih dahulu", true); return; }
+  if (pin !== PIN_DEFAULT) { showToast("PIN salah! Gunakan 1234", true); return; }
+  const g = GURU_LIST.find(x => x.id === id);
+  currentUser = g;
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ id: g.id }));
+  document.getElementById("loginScreen").classList.add("hidden");
+  showApp();
+}
+
+function doLogout() {
+  if (!confirm("Yakin ingin keluar?")) return;
+  localStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+function showApp() {
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("headerUser").textContent = currentUser.nama.split(",")[0];
+  updateHeaderDate();
+  startLiveClock();
+  initMap();
+  refreshLocation();
+  loadTodayHistory();
+  initTabs();
+  setDefaultDates();
+}
+
+function updateHeaderDate() {
+  const d = new Date();
+  document.getElementById("headerDate").textContent =
+    `${dayName(d)}, ${d.getDate()} ${monthName(d.getMonth()+1)} ${d.getFullYear()}`;
+}
+
+function startLiveClock() {
+  const tick = () => {
+    document.getElementById("liveClock").textContent = fmtTime();
+    const d = new Date();
+    document.getElementById("liveDate").textContent =
+      `${dayName(d)}, ${d.getDate()} ${monthName(d.getMonth()+1)} ${d.getFullYear()}`;
+  };
+  tick();
+  if (liveClockInterval) clearInterval(liveClockInterval);
+  liveClockInterval = setInterval(tick, 1000);
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+function initTabs() {
+  document.querySelectorAll("#tabs .tab").forEach(t => {
+    t.addEventListener("click", () => {
+      const tab = t.dataset.tab;
+      if (tab === "logout") { doLogout(); return; }
+      document.querySelectorAll("#tabs .tab").forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      ["absen","rekap","bulanan","dashboard"].forEach(x => {
+        document.getElementById("tab-"+x).classList.toggle("hidden", x !== tab);
+      });
+      if (tab === "rekap") loadMyRekap();
+      if (tab === "bulanan") loadBulanan();
+      if (tab === "dashboard") loadDashboard();
+    });
+  });
+}
+
+/* ============================================================
+   PETA & LOKASI
+   ============================================================ */
+function initMap() {
+  if (map) return;
+  const el = document.getElementById("map");
+  if (!el) return;
+  try {
+    map = L.map("map", { zoomControl: true, attributionControl: false }).setView([SCHOOL.lat, SCHOOL.lng], 15);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+
+    // Marker sekolah
+    L.marker([SCHOOL.lat, SCHOOL.lng]).addTo(map).bindPopup("🏫 " + SCHOOL.name);
+
+    // Circle radius sekolah
+    circle = L.circle([SCHOOL.lat, SCHOOL.lng], {
+      color: "#14532d", fillColor: "#14532d", fillOpacity: 0.15, radius: SCHOOL.radiusMeter
+    }).addTo(map);
+
+    setTimeout(() => map.invalidateSize(), 300);
+  } catch(e) { console.warn("Map init error:", e); }
+}
+
+function refreshLocation() {
+  const info = document.getElementById("locInfo");
+  info.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengambil lokasi...';
+
+  if (!navigator.geolocation) {
+    info.innerHTML = '⚠️ Perangkat tidak mendukung GPS. Absen tetap bisa dilakukan (lokasi tidak tersedia).';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      currentLocation = { lat: latitude, lng: longitude, accuracy: Math.round(accuracy) };
+      const dist = haversine(latitude, longitude, SCHOOL.lat, SCHOOL.lng);
+      const inArea = dist <= SCHOOL.radiusMeter;
+      info.innerHTML = `
+        <div><strong>Koordinat:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</div>
+        <div><strong>Akurasi:</strong> ±${Math.round(accuracy)} m</div>
+        <div><strong>Jarak ke sekolah:</strong> ${dist < 1000 ? Math.round(dist)+" m" : (dist/1000).toFixed(2)+" km"}</div>
+        <div style="margin-top:6px"><span class="badge ${inArea?'badge-in':'badge-out'}">
+          ${inArea ? "✅ Di Dalam Area Sekolah" : "⚠️ Di Luar Area ("+SCHOOL.radiusMeter+"m)"}
+        </span></div>
+      `;
+      if (map) {
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([latitude, longitude], {
+          icon: L.divIcon({ html: '<div style="font-size:22px">📍</div>', className: "", iconSize:[22,22] })
+        }).addTo(map).bindPopup("Lokasi Anda").openPopup();
+        map.setView([latitude, longitude], 17);
+      }
+    },
+    err => {
+      let msg = "Gagal mengambil lokasi";
+      if (err.code === 1) msg = "Izin lokasi ditolak. Aktifkan GPS/Izin lokasi di pengaturan browser.";
+      else if (err.code === 2) msg = "Lokasi tidak tersedia. Coba di tempat terbuka.";
+      else if (err.code === 3) msg = "Waktu habis mengambil lokasi.";
+      info.innerHTML = `⚠️ ${msg}<br><small>Anda tetap bisa absen tanpa data lokasi.</small>`;
+      currentLocation = null;
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+  );
+}
+
+/* ============================================================
+   ABSEN
+   ============================================================ */
+function openAbsen(status) {
+  currentAbsenStatus = status;
+  const d = new Date();
+  const tgl = `${dayName(d)}, ${d.getDate()} ${monthName(d.getMonth()+1)} ${d.getFullYear()}`;
+  document.getElementById("modalTitle").textContent = status === "Pulang" ? "Konfirmasi Absen Pulang" : "Konfirmasi Absen " + status;
+  let extra = "";
+  if (currentLocation) {
+    const dist = haversine(currentLocation.lat, currentLocation.lng, SCHOOL.lat, SCHOOL.lng);
+    extra = `<br><small>📍 Jarak: ${dist<1000?Math.round(dist)+"m":(dist/1000).toFixed(2)+"km"}</small>`;
+  } else {
+    extra = `<br><small>⚠️ Lokasi tidak terdeteksi</small>`;
+  }
+  document.getElementById("modalDesc").innerHTML = `${tgl}<br>Jam: ${fmtTime()}${extra}`;
+  document.getElementById("modal").classList.add("show");
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.remove("show");
+  currentAbsenStatus = null;
+}
+
+function confirmAbsen() {
+  if (!currentAbsenStatus) return;
+  const status = currentAbsenStatus;
+  const d = new Date();
+  const rec = {
+    id: Date.now() + "-" + Math.random().toString(36).slice(2,7),
+    guruId: currentUser.id,
+    guruNama: currentUser.nama,
+    nip: currentUser.nip,
+    tanggal: todayStr(d),
+    tanggalLabel: `${dayName(d)}, ${d.getDate()} ${monthName(d.getMonth()+1)} ${d.getFullYear()}`,
+    jam: fmtTimeShort(d),
+    jamFull: fmtTime(d),
+    timestamp: d.getTime(),
+    status: status === "Pulang" ? "Pulang" : status,
+    lat: currentLocation ? currentLocation.lat : null,
+    lng: currentLocation ? currentLocation.lng : null,
+    accuracy: currentLocation ? currentLocation.accuracy : null,
+    device: navigator.userAgent.slice(0, 60)
+  };
+  addAbsen(rec);
+  closeModal();
+  showToast(`✅ Absen ${status} berhasil pada ${rec.jam}`);
+  loadTodayHistory();
+  if (document.getElementById("tab-dashboard").classList.contains("hidden") === false) loadDashboard();
+}
+
+/* ============================================================
+   RIWAYAT HARI INI
+   ============================================================ */
+function loadTodayHistory() {
+  const today = todayStr();
+  const data = loadData()
+    .filter(r => r.guruId === currentUser.id && r.tanggal === today)
+    .sort((a, b) => a.timestamp - b.timestamp);
+
+  const box = document.getElementById("todayHistory");
+  if (!data.length) {
+    box.innerHTML = '<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:12px">Belum ada absen hari ini</p>';
+    return;
+  }
+  const colors = { "Hadir":"#16a34a","Izin":"#0ea5e9","Sakit":"#f59e0b","Dinas Luar":"#7c3aed","Cuti":"#dc2626","Pulang":"#475569" };
+  const icons = { "Hadir":"fa-circle-check","Izin":"fa-envelope-open-text","Sakit":"fa-notes-medical","Dinas Luar":"fa-briefcase","Cuti":"fa-plane-departure","Pulang":"fa-house-chimney" };
+  box.innerHTML = data.map(r => `
+    <div class="hist-item">
+      <div class="hist-icon" style="background:${colors[r.status]||'#475569'}">
+        <i class="fa-solid ${icons[r.status]||'fa-circle'}"></i>
+      </div>
+      <div class="hist-body">
+        <h4>${r.status}</h4>
+        <p>${r.lat ? `📍 ${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}` : "📍 Lokasi tidak tersedia"}</p>
+      </div>
+      <div class="hist-time">${r.jam}</div>
+    </div>
+  `).join("");
+}
+
+/* ============================================================
+   REKAP SAYA
+   ============================================================ */
+function setDefaultDates() {
+  const end = new Date();
+  const start = new Date(); start.setDate(1);
+  document.getElementById("rekapStart").value = todayStr(start);
+  document.getElementById("rekapEnd").value = todayStr(end);
+  document.getElementById("blnBulan").value = (end.getMonth()+1);
+  document.getElementById("blnTahun").value = end.getFullYear();
+}
+
+function loadMyRekap() {
+  const start = document.getElementById("rekapStart").value;
+  const end = document.getElementById("rekapEnd").value;
+  if (!start || !end) return;
+
+  const data = loadData()
+    .filter(r => r.guruId === currentUser.id && r.tanggal >= start && r.tanggal <= end && r.status !== "Pulang")
+    .sort((a,b) => b.timestamp - a.timestamp);
+
+  const counts = { Hadir:0, Izin:0, Sakit:0, "Dinas Luar":0, Cuti:0 };
+  data.forEach(r => { if (counts[r.status] !== undefined) counts[r.status]++; });
+
+  document.getElementById("myStats").innerHTML = `
+    <div class="stat-box"><div class="num" style="color:#16a34a">${counts.Hadir}</div><div class="lbl">Hadir</div></div>
+    <div class="stat-box"><div class="num" style="color:#0ea5e9">${counts.Izin}</div><div class="lbl">Izin</div></div>
+    <div class="stat-box"><div class="num" style="color:#f59e0b">${counts.Sakit}</div><div class="lbl">Sakit</div></div>
+    <div class="stat-box"><div class="num" style="color:#7c3aed">${counts["Dinas Luar"]}</div><div class="lbl">Dinas Luar</div></div>
+  `;
+
+  const tbody = document.querySelector("#myRekapTable tbody");
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:20px">Tidak ada data</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(r => {
+    const loc = r.lat ? `<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" style="color:#0ea5e9">Lihat Peta</a>` : "-";
+    return `<tr>
+      <td>${r.tanggalLabel || r.tanggal}</td>
+      <td><span class="badge" style="background:#e0e7ff;color:#3730a3">${r.status}</span></td>
+      <td>${r.jam}</td>
+      <td>${loc}</td>
+    </tr>`;
+  }).join("");
+}
+
+/* ============================================================
+   REKAP BULANAN
+   ============================================================ */
+function loadBulanan() {
+  const bulan = parseInt(document.getElementById("blnBulan").value);
+  const tahun = parseInt(document.getElementById("blnTahun").value);
+  const prefix = `${tahun}-${pad(bulan)}`;
+
+  const all = loadData().filter(r => r.tanggal.startsWith(prefix) && r.status !== "Pulang");
+  const tbody = document.querySelector("#bulananTable tbody");
+
+  const rows = GURU_LIST.map((g, i) => {
+    const recs = all.filter(r => r.guruId === g.id);
+    const c = { Hadir:0, Izin:0, Sakit:0, "Dinas Luar":0, Cuti:0 };
+    recs.forEach(r => { if (c[r.status] !== undefined) c[r.status]++; });
+    const total = c.Hadir + c.Izin + c.Sakit + c["Dinas Luar"] + c.Cuti;
+    const pct = total ? Math.round((c.Hadir / total) * 100) : 0;
+    const cls = pct >= 90 ? "good" : pct >= 70 ? "mid" : "bad";
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${g.nama}</td>
+      <td style="font-size:10px">${g.nip}</td>
+      <td>${c.Hadir}</td>
+      <td>${c.Izin}</td>
+      <td>${c.Sakit}</td>
+      <td>${c["Dinas Luar"]}</td>
+      <td>${c.Cuti}</td>
+      <td><strong>${total}</strong></td>
+      <td class="pct ${cls}">${pct}%</td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows.join("");
+  document.getElementById("blnTitle").innerHTML = `<i class="fa-solid fa-table"></i> Rekap ${monthName(bulan)} ${tahun}`;
+}
+
+function exportExcel() {
+  const bulan = parseInt(document.getElementById("blnBulan").value);
+  const tahun = parseInt(document.getElementById("blnTahun").value);
+  const prefix = `${tahun}-${pad(bulan)}`;
+  const all = loadData().filter(r => r.tanggal.startsWith(prefix) && r.status !== "Pulang");
+
+  const rows = [["No","Nama Guru","NIP","Hadir","Izin","Sakit","Dinas Luar","Cuti","Total","Persentase"]];
+  GURU_LIST.forEach((g, i) => {
+    const recs = all.filter(r => r.guruId === g.id);
+    const c = { Hadir:0, Izin:0, Sakit:0, "Dinas Luar":0, Cuti:0 };
+    recs.forEach(r => { if (c[r.status] !== undefined) c[r.status]++; });
+    const total = c.Hadir + c.Izin + c.Sakit + c["Dinas Luar"] + c.Cuti;
+    const pct = total ? Math.round((c.Hadir / total) * 100) : 0;
+    rows.push([i+1, g.nama, g.nip, c.Hadir, c.Izin, c.Sakit, c["Dinas Luar"], c.Cuti, total, pct + "%"]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, `Rekap ${monthName(bulan)} ${tahun}`);
+  XLSX.writeFile(wb, `Rekap_Absensi_${monthName(bulan)}_${tahun}.xlsx`);
+  showToast("✅ File Excel diunduh");
+}
+
+function exportPDF() {
+  const bulan = parseInt(document.getElementById("blnBulan").value);
+  const tahun = parseInt(document.getElementById("blnTahun").value);
+  const prefix = `${tahun}-${pad(bulan)}`;
+  const all = loadData().filter(r => r.tanggal.startsWith(prefix) && r.status !== "Pulang");
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+  doc.setFontSize(14); doc.setFont(undefined, "bold");
+  doc.text("REKAP ABSENSI GURU", 148, 14, { align: "center" });
+  doc.setFontSize(11); doc.setFont(undefined, "normal");
+  doc.text(`${SCHOOL.name} - ${SCHOOL.dinas}`, 148, 20, { align: "center" });
+  doc.text(`Bulan: ${monthName(bulan)} ${tahun}`, 148, 26, { align: "center" });
+
+  const body = GURU_LIST.map((g, i) => {
+    const recs = all.filter(r => r.guruId === g.id);
+    const c = { Hadir:0, Izin:0, Sakit:0, "Dinas Luar":0, Cuti:0 };
+    recs.forEach(r => { if (c[r.status] !== undefined) c[r.status]++; });
+    const total = c.Hadir + c.Izin + c.Sakit + c["Dinas Luar"] + c.Cuti;
+    const pct = total ? Math.round((c.Hadir / total) * 100) : 0;
+    return [i+1, g.nama, g.nip, c.Hadir, c.Izin, c.Sakit, c["Dinas Luar"], c.Cuti, total, pct + "%"];
+  });
+
+  doc.autoTable({
+    startY: 32,
+    head: [["No","Nama Guru","NIP","Hadir","Izin","Sakit","Dinas Luar","Cuti","Total","%"]],
+    body,
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [20, 83, 45], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [241, 245, 249] }
+  });
+
+  const y = doc.lastAutoTable.finalY + 12;
+  doc.setFontSize(10);
+  doc.text("Kepala Sekolah,", 220, y);
+  doc.text(SCHOOL.kepala, 220, y + 20);
+  doc.text(`NIP. 196907271995031003`, 220, y + 25);
+
+  doc.save(`Rekap_Absensi_${monthName(bulan)}_${tahun}.pdf`);
+  showToast("✅ File PDF diunduh");
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function loadDashboard() {
+  const today = todayStr();
+  const data = loadData().filter(r => r.tanggal === today && r.status !== "Pulang");
+
+  const hadir = data.filter(r => r.status === "Hadir").length;
+  const izinSakit = data.filter(r => r.status === "Izin" || r.status === "Sakit").length;
+  const sudahAbsenIds = new Set(data.map(r => r.guruId));
+  const belum = GURU_LIST.length - sudahAbsenIds.size;
+
+  document.getElementById("dashHadir").textContent = hadir;
+  document.getElementById("dashIzin").textContent = izinSakit;
+  document.getElementById("dashBelum").textContent = belum;
+  document.getElementById("dashTotal").textContent = GURU_LIST.length;
+
+  const tbody = document.querySelector("#dashTable tbody");
+  const colors = { "Hadir":"#16a34a","Izin":"#0ea5e9","Sakit":"#f59e0b","Dinas Luar":"#7c3aed","Cuti":"#dc2626" };
+  tbody.innerHTML = GURU_LIST.map(g => {
+    const rec = data.find(r => r.guruId === g.id);
+    if (rec) {
+      const loc = rec.lat ? `<a href="https://www.google.com/maps?q=${rec.lat},${rec.lng}" target="_blank" style="color:#0ea5e9;font-size:11px">Lihat</a>` : "-";
+      return `<tr>
+        <td>${g.nama}</td>
+        <td><span class="badge" style="background:${colors[rec.status]}20;color:${colors[rec.status]}">${rec.status}</span></td>
+        <td>${rec.jam}</td>
+        <td>${loc}</td>
+      </tr>`;
+    }
+    return `<tr>
+      <td>${g.nama}</td>
+      <td><span class="badge" style="background:#f1f5f9;color:#64748b">Belum Absen</span></td>
+      <td>-</td><td>-</td>
+    </tr>`;
+  }).join("");
+
+  // Chart bulan ini
+  const now = new Date();
+  const prefix = `${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+  const monthly = loadData().filter(r => r.tanggal.startsWith(prefix) && r.status !== "Pulang");
+  const perDay = {};
+  monthly.forEach(r => {
+    if (r.status === "Hadir") {
+      perDay[r.tanggal] = (perDay[r.tanggal] || 0) + 1;
+    }
+  });
+  const labels = Object.keys(perDay).sort();
+  const values = labels.map(k => perDay[k]);
+
+  if (chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById("chartKehadiran").getContext("2d");
+  chartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels.length ? labels.map(l => l.slice(-2)) : ["-"],
+      datasets: [{
+        label: "Jumlah Hadir",
+        data: values.length ? values : [0],
+        borderColor: "#14532d",
+        backgroundColor: "rgba(20,83,45,.1)",
+        tension: 0.35,
+        fill: true,
+        pointBackgroundColor: "#d4af37",
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+
+/* ============================================================
+   SERVICE WORKER (PWA)
+   ============================================================ */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").catch(() => {});
+  });
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", initLogin);
+window.addEventListener("resize", () => { if (map) setTimeout(() => map.invalidateSize(), 200); });
+</script>
+</body>
+</html>
